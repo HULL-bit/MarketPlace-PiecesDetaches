@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<head>
+    <ui:include src="/WEB-INF/fragments/adminHead.xhtml"/>
+</head>
+<body class="admin-body"
+      data-msg-user-del="#{msg['admin.users.confirmDelete']}"
+      data-msg-modal-add="#{msg['admin.users.modalAdd']}"
+      data-msg-modal-edit="#{msg['admin.users.modalEdit']}">
+<div class="admin-layout">
+    <ui:include src="/WEB-INF/fragments/adminSidebar.xhtml"><ui:param name="adminNav" value="utilisateurs"/></ui:include>
+    <div class="admin-main">
+        <ui:include src="/WEB-INF/fragments/adminTopbar.xhtml"/>
+        <div class="admin-content">
+            <c:if test="#{not empty success}">
+                <div class="admin-alert success"><i class="fas fa-check-circle"></i> #{success}</div>
+            </c:if>
+            <c:if test="#{not empty error}">
+                <div class="admin-alert error"><i class="fas fa-exclamation-circle"></i> #{error}</div>
+            </c:if>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">#{msg['admin.users.listTitle']}</h3>
+                    <button type="button" class="btn btn-primary" onclick="openModal('addModal')"><i class="fas fa-plus"></i> #{msg['admin.users.add']}</button>
+                </div>
+                <div class="admin-card-body admin-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>#{msg['admin.users.colUser']}</th>
+                            <th>#{msg['admin.users.colLogin']}</th>
+                            <th>#{msg['admin.users.colEmail']}</th>
+                            <th>#{msg['admin.users.colRole']}</th>
+                            <th>#{msg['admin.users.colStatus']}</th>
+                            <th>#{msg['admin.common.actions']}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="user" items="#{utilisateurs}">
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <div class="table-avatar">#{empty user.prenom ? '?' : fn:toUpperCase(fn:substring(user.prenom, 0, 1))}</div>
+                                        <span>#{user.prenom} #{user.nom}</span>
+                                    </div>
+                                </td>
+                                <td>#{user.login}</td>
+                                <td>#{user.email}</td>
+                                <td><span class="status-badge active">#{user.role}</span></td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="#{user.etat == 'ACTIF'}">
+                                            <span class="status-badge active">#{msg['admin.users.statusActive']}</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="status-badge inactive">#{msg['admin.users.statusInactive']}</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="openEditModal(this)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <a href="#{facesContext.externalContext.requestContextPath}/admin/utilisateurs/#{user.idpersonne}/delete"
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm(document.body.getAttribute('data-msg-user-del'));"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                                <td style="display:none" class="u-id">#{user.idpersonne}</td>
+                                <td style="display:none" class="u-nom">#{user.nom}</td>
+                                <td style="display:none" class="u-prenom">#{user.prenom}</td>
+                                <td style="display:none" class="u-email">#{user.email}</td>
+                                <td style="display:none" class="u-login">#{user.login}</td>
+                                <td style="display:none" class="u-etat">#{user.etat}</td>
+                                <td style="display:none" class="u-profileId"><h:outputText value="#{user.role}"/></td>
+                                <td style="display:none" class="u-tel"><h:outputText value="#{user.tel}"/></td>
+                                <td style="display:none" class="u-tel2"><h:outputText value="#{user.tel2}"/></td>
+                                <td style="display:none" class="u-sexe"><h:outputText value="#{user.sexe}"/></td>
+                                <td style="display:none" class="u-datenaiss">#{user.datenaiss ne null ? user.datenaiss : ''}</td>
+                                <td style="display:none" class="u-lieunaiss"><h:outputText value="#{user.lieunaiss}"/></td>
+                                <td style="display:none" class="u-adresse"><h:outputText value="#{user.adresse}"/></td>
+                            </tr>
+                        </c:forEach>
+                        <c:if test="#{empty utilisateurs}">
+                            <tr><td colspan="6" style="text-align:center;padding:2rem;color:#7f8c8d;">#{msg['admin.users.empty']}</td></tr>
+                        </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="addModalTitle">#{msg['admin.users.modalAdd']}</h3>
+            <button type="button" class="close-btn" onclick="closeModal('addModal')">&#215;</button>
+        </div>
+        <form action="#{facesContext.externalContext.requestContextPath}/admin/utilisateurs/create" method="POST">
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldLastName']}</label>
+                <input type="text" name="nom" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldFirstName']}</label>
+                <input type="text" name="prenom" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldEmail']}</label>
+                <input type="email" name="email" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldLogin']}</label>
+                <input type="text" name="login" required="required" placeholder="#{msg['admin.users.fieldLoginHint']}"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldPhone']}</label>
+                <input type="text" name="telephone" placeholder="#{msg['form.register.field.phone.optional']}"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldPhone2']}</label>
+                <input type="text" name="telephone2" placeholder="#{msg['form.register.field.phone.optional']}"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldGender']}</label>
+                <select name="sexe">
+                    <option value="">#{msg['admin.users.genderUnset']}</option>
+                    <option value="H">#{msg['admin.users.genderM']}</option>
+                    <option value="F">#{msg['admin.users.genderF']}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldBirthDate']}</label>
+                <input type="date" name="datenaiss"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldBirthPlace']}</label>
+                <input type="text" name="lieunaiss"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldAddress']}</label>
+                <textarea name="adresse" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldPasswordInitial']}</label>
+                <input type="password" name="password" required="required" autocomplete="new-password"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldProfile']}</label>
+                <select name="profileId" required="required">
+                    <c:forEach var="pr" items="#{profiles}">
+                        <option value="#{pr.idprofile}">#{pr.idprofile} — #{pr.libelle}</option>
+                    </c:forEach>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">#{msg['admin.common.cancel']}</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> #{msg['admin.common.save']}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="editModalTitle">#{msg['admin.users.modalEdit']}</h3>
+            <button type="button" class="close-btn" onclick="closeModal('editModal')">&#215;</button>
+        </div>
+        <form action="#{facesContext.externalContext.requestContextPath}/admin/utilisateurs/update" method="POST">
+            <input type="hidden" name="idpersonne" id="edit_idpersonne"/>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldLastName']}</label>
+                <input type="text" name="nom" id="edit_nom" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldFirstName']}</label>
+                <input type="text" name="prenom" id="edit_prenom" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldEmail']}</label>
+                <input type="email" name="email" id="edit_email" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldLogin']}</label>
+                <input type="text" name="login" id="edit_login" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldStatus']}</label>
+                <select name="etat" id="edit_etat">
+                    <option value="ACTIF">#{msg['admin.users.statusActive']}</option>
+                    <option value="INACTIF">#{msg['admin.users.statusInactive']}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldProfile']}</label>
+                <select name="profileId" id="edit_profileId">
+                    <c:forEach var="pr" items="#{profiles}">
+                        <option value="#{pr.idprofile}">#{pr.idprofile} — #{pr.libelle}</option>
+                    </c:forEach>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldPhone']}</label>
+                <input type="text" name="telephone" id="edit_tel"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldPhone2']}</label>
+                <input type="text" name="telephone2" id="edit_tel2"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldGender']}</label>
+                <select name="sexe" id="edit_sexe">
+                    <option value="">#{msg['admin.users.genderUnset']}</option>
+                    <option value="H">#{msg['admin.users.genderM']}</option>
+                    <option value="F">#{msg['admin.users.genderF']}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldBirthDate']}</label>
+                <input type="date" name="datenaiss" id="edit_datenaiss"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldBirthPlace']}</label>
+                <input type="text" name="lieunaiss" id="edit_lieunaiss"/>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldAddress']}</label>
+                <textarea name="adresse" id="edit_adresse" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>#{msg['admin.users.fieldPasswordNew']}</label>
+                <input type="password" name="password" placeholder="#{msg['admin.users.fieldPasswordHint']}" autocomplete="new-password"/>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">#{msg['admin.common.cancel']}</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> #{msg['admin.common.save']}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    //<![CDATA[
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+        if (id === 'addModal') {
+            var t = document.getElementById('addModalTitle');
+            if (t) t.textContent = document.body.getAttribute('data-msg-modal-add') || t.textContent;
+        }
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+    function openEditModal(btn) {
+        var tr = btn.closest('tr');
+        document.getElementById('edit_idpersonne').value = tr.querySelector('.u-id').textContent.trim();
+        document.getElementById('edit_nom').value = tr.querySelector('.u-nom').textContent.trim();
+        document.getElementById('edit_prenom').value = tr.querySelector('.u-prenom').textContent.trim();
+        document.getElementById('edit_email').value = tr.querySelector('.u-email').textContent.trim();
+        document.getElementById('edit_login').value = tr.querySelector('.u-login').textContent.trim();
+        document.getElementById('edit_etat').value = tr.querySelector('.u-etat').textContent.trim();
+        var profileId = tr.querySelector('.u-profileId').textContent.trim();
+        document.getElementById('edit_tel').value = tr.querySelector('.u-tel').textContent.trim();
+        document.getElementById('edit_tel2').value = tr.querySelector('.u-tel2').textContent.trim();
+        document.getElementById('edit_sexe').value = tr.querySelector('.u-sexe').textContent.trim();
+        document.getElementById('edit_datenaiss').value = tr.querySelector('.u-datenaiss').textContent.trim();
+        document.getElementById('edit_lieunaiss').value = tr.querySelector('.u-lieunaiss').textContent.trim();
+        document.getElementById('edit_adresse').value = tr.querySelector('.u-adresse').textContent.trim();
+        var sel = document.getElementById('edit_profileId');
+        for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === profileId) {
+                sel.selectedIndex = i;
+                break;
+            }
+        }
+        var em = document.getElementById('editModalTitle');
+        if (em) em.textContent = document.body.getAttribute('data-msg-modal-edit') || em.textContent;
+        openModal('editModal');
+    }
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.classList.remove('active');
+        }
+    };
+    //]]>
+</script>
+</body>
+</html>

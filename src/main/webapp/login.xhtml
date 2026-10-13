@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>#{msg['form.auth.pageTitle']} - AutoPieces Pro</title>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/login.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/template/poseidon-layout/css/primeflex.min.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/mpd-public-theme.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/vendor/fontawesome/css/all.min.css" />
+    <script>
+        //<![CDATA[
+        (function () {
+            try {
+                var t = localStorage.getItem('mpd_ui_theme') || 'dark';
+                if (t !== 'light' && t !== 'dark') { t = 'dark'; }
+                document.documentElement.setAttribute('data-mpd-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-mpd-theme', 'dark'); }
+        })();
+        //]]>
+    </script>
+</head>
+<body style="margin: 0; padding: 0;" class="mpd-site-body">
+    <div class="login-toolbar">
+        <button type="button" id="mpd-theme-toggle" class="mpd-btn-theme" aria-label="#{msg['ui.theme.toggle']}"></button>
+    </div>
+    <div class="login-page">
+        <div class="login-form-section">
+            <div class="login-container">
+                <div class="login-logo">
+                    <a href="#{facesContext.externalContext.requestContextPath}/">
+                        <i class="fas fa-car" style="font-size: 4rem; color: #2c3e50;"></i>
+                    </a>
+                    <h1 class="login-title">#{msg['form.auth.pageTitle']}</h1>
+                    <p class="login-subtitle">#{msg['form.auth.pageSubtitle']}</p>
+                </div>
+
+                <c:if test="#{not empty error}">
+                    <div class="alert alert-error" style="background: rgba(231, 76, 60, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <i class="fas fa-exclamation-circle"></i> #{msg['form.auth.error.invalid']}
+                    </div>
+                </c:if>
+                <c:if test="#{not empty message}">
+                    <div class="alert alert-success" style="background: rgba(39, 174, 96, 0.1); border: 1px solid var(--success); color: var(--success); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i> #{message}
+                    </div>
+                </c:if>
+                <c:if test="#{not empty param['logout']}">
+                    <div class="alert alert-success" style="background: rgba(39, 174, 96, 0.1); border: 1px solid var(--success); color: var(--success); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i> #{msg['form.auth.logout.success']}
+                    </div>
+                </c:if>
+
+                <form method="POST" action="#{facesContext.externalContext.requestContextPath}/login" class="login-form">
+                    <c:if test="#{not empty param['redirect']}">
+                        <input type="hidden" name="redirect" value="#{param['redirect']}"/>
+                    </c:if>
+                    <div class="form-group">
+                        <label for="username"><i class="fas fa-user"></i> #{msg['form.auth.field.username']}</label>
+                        <input type="text" id="username" name="username" required="required" placeholder="#{msg['form.auth.field.username.placeholder']}" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-lock"></i> #{msg['form.auth.field.password']}</label>
+                        <input type="password" id="password" name="password" required="required" placeholder="#{msg['form.auth.field.password.placeholder']}" />
+                    </div>
+
+                    <div class="form-options">
+                        <label class="remember-me" style="display: flex; align-items: center; gap: 0.5rem; color: #C0C0C0;">
+                            <input type="checkbox" name="remember-me" /> #{msg['form.auth.remember']}
+                        </label>
+                    </div>
+
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-sign-in-alt"></i> #{msg['form.auth.submit']}
+                    </button>
+                </form>
+
+                <div class="login-signup" style="text-align: center; margin-top: 1.5rem; color: #C0C0C0;">
+                    <p>#{msg['form.auth.register.prompt']} <a href="#{facesContext.externalContext.requestContextPath}/register">#{msg['nav.register']}</a></p>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="#{facesContext.externalContext.requestContextPath}/" style="color: var(--text-muted); text-decoration: none;">
+                        <i class="fas fa-arrow-left"></i> #{msg['form.auth.link.home']}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-visual-section">
+            <div style="text-align: center; max-width: 600px;">
+                <div style="margin-bottom: 3rem;">
+                    <i class="fas fa-car" style="font-size: 5rem; color: var(--secondary-light); margin-bottom: 2rem;"></i>
+                    <h2 style="font-size: 2.5rem; margin-bottom: 1rem; font-weight: 700;">#{msg['form.auth.side.welcome']}</h2>
+                    <p style="font-size: 1.2rem; color: rgba(255,255,255,0.8); line-height: 1.6;">
+                        #{msg['form.auth.side.lead']}
+                    </p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin-top: 3rem; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 1rem; background: rgba(26, 26, 26, 0.6); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(192, 192, 192, 0.1);">
+                        <div style="width: 50px; height: 50px; background: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-search" style="font-size: 1.3rem;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 1rem; color: white;">#{msg['form.auth.side.feature.search.title']}</h4>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: rgba(255,255,255,0.7);">#{msg['form.auth.side.feature.search.desc']}</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem; background: rgba(26, 26, 26, 0.6); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(192, 192, 192, 0.1);">
+                        <div style="width: 50px; height: 50px; background: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-shield-alt" style="font-size: 1.3rem;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 1rem; color: white;">#{msg['form.auth.side.feature.quality.title']}</h4>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: rgba(255,255,255,0.7);">#{msg['form.auth.side.feature.quality.desc']}</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem; background: rgba(26, 26, 26, 0.6); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(192, 192, 192, 0.1);">
+                        <div style="width: 50px; height: 50px; background: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-truck" style="font-size: 1.3rem;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 1rem; color: white;">#{msg['form.auth.side.feature.delivery.title']}</h4>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: rgba(255,255,255,0.7);">#{msg['form.auth.side.feature.delivery.desc']}</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem; background: rgba(26, 26, 26, 0.6); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(192, 192, 192, 0.1);">
+                        <div style="width: 50px; height: 50px; background: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-headset" style="font-size: 1.3rem;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 1rem; color: white;">#{msg['form.auth.side.feature.support.title']}</h4>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: rgba(255,255,255,0.7);">#{msg['form.auth.side.feature.support.desc']}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(192, 192, 192, 0.2); display: flex; justify-content: space-around;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: white;">5000+</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-top: 0.5rem;">#{msg['form.auth.side.stat.parts']}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: white;">1200+</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-top: 0.5rem;">#{msg['form.auth.side.stat.clients']}</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: white;">48</div>
+                        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-top: 0.5rem;">#{msg['form.auth.side.stat.regions']}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-theme.js"></script>
+    <script>MpdTheme.init();</script>
+</body>
+</html>

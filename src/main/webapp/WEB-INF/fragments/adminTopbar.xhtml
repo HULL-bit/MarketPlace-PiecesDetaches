@@ -1,0 +1,35 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <c:set var="cp" value="#{facesContext.externalContext.requestContextPath}"/>
+    <c:set var="pageTitle" value="#{empty adminPageTitle ? msg['admin.nav.dashboard'] : adminPageTitle}"/>
+    <c:set var="adminUser" value="#{empty currentAdmin ? adminLayoutView.currentAdmin : currentAdmin}"/>
+    <c:set var="adminAvatar" value="#{empty currentAdminAvatarUrl ? adminLayoutView.currentAdminAvatarUrl : currentAdminAvatarUrl}"/>
+
+    <header class="admin-topbar">
+        <div class="admin-topbar-inner">
+            <div class="admin-topbar-left">
+                <button type="button" id="admin-sidebar-toggle" class="admin-sidebar-toggle"
+                        aria-label="#{msg['admin.sidebar.open']}">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="admin-topbar-title-wrap">
+                    <h1 class="admin-topbar-title">#{pageTitle}</h1>
+                    <c:if test="#{not empty currentDate}">
+                        <span class="admin-topbar-date">#{currentDate}</span>
+                    </c:if>
+                </div>
+            </div>
+            <div class="admin-topbar-actions">
+                <button type="button" id="mpd-theme-toggle" class="mpd-btn-theme" aria-label="#{msg['ui.theme.toggle']}"></button>
+                <c:if test="#{not empty adminUser}">
+                    <a href="#{cp}/admin/profil" class="admin-topbar-user">
+                        <img src="#{adminAvatar}" alt="" class="admin-topbar-avatar"/>
+                        <span>#{adminUser.prenom} #{adminUser.nom}</span>
+                    </a>
+                </c:if>
+            </div>
+        </div>
+    </header>
+</ui:composition>

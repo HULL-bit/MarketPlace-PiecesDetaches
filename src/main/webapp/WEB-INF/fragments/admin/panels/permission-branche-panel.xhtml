@@ -1,0 +1,322 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+    <c:if test="#{not empty success}">
+        <div class="admin-alert success"><i class="fas fa-check-circle"></i> #{success}</div>
+    </c:if>
+    <c:if test="#{not empty error}">
+        <div class="admin-alert error"><i class="fas fa-exclamation-circle"></i> #{error}</div>
+    </c:if>
+
+    <!-- ===================== BRANCHES + PERMISSIONS (accordéon) ===================== -->
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h3 class="admin-card-title"><i class="fas fa-sitemap"></i> #{msg['admin.branch.listTitle']}</h3>
+            <button type="button" class="btn btn-primary" onclick="openBranchModal()">
+                <i class="fas fa-plus"></i> #{msg['admin.branch.modalAdd']}
+            </button>
+        </div>
+        <div class="admin-card-body">
+            <p class="brand-intro">#{msg['admin.branch.help']}</p>
+
+            <div class="dt-filter-bar" style="margin-bottom:1rem;">
+                <input type="text" id="branchAccSearch" class="dt-filter-input" style="flex:1;"
+                       placeholder="&#128269; Rechercher une branche ou une permission..."
+                       oninput="filterBranchAccordion(this.value)" />
+                <button type="button" class="btn btn-sm btn-light" onclick="document.getElementById('branchAccSearch').value=''; filterBranchAccordion('');">
+                    <i class="fas fa-eraser"></i> Reset
+                </button>
+            </div>
+
+            <div class="branch-accordion" id="branchAccordion">
+                <c:forEach var="b" items="#{branches}">
+                    <details class="branch-acc-item" open="open"
+                              data-branch-id="#{b.idbranche}" data-branch-label="#{fn:escapeXml(b.libelle)}"
+                              data-branch-ref="#{fn:escapeXml(b.ref)}" data-branch-niveau="#{b.niveau}" data-branch-etat="#{b.etat}">
+                        <summary class="branch-acc-header">
+                            <i class="fas fa-chevron-right branch-acc-chevron"></i>
+                            <code class="branch-acc-code">#{b.code}</code>
+                            <span class="branch-acc-label">#{b.libelle}</span>
+                            <span class="branch-acc-level">Niveau #{b.niveau}</span>
+                            <span class="branch-acc-count"></span>
+                            <c:choose>
+                                <c:when test="#{b.etat == 'ACTIF'}"><span class="status-badge active">#{msg['admin.common.stateActive']}</span></c:when>
+                                <c:otherwise><span class="status-badge inactive">#{msg['admin.common.stateInactive']}</span></c:otherwise>
+                            </c:choose>
+                            <span class="branch-acc-actions" onclick="event.stopPropagation();">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="editBranch(this)" title="#{msg['admin.common.edit']}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a class="btn btn-sm btn-danger"
+                                   href="#{facesContext.externalContext.requestContextPath}/admin/branches/#{b.idbranche}/delete"
+                                   onclick="return confirm('#{msg['admin.branch.confirmDelete']}');" title="#{msg['admin.common.delete']}">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </span>
+                        </summary>
+                        <div class="branch-acc-body">
+                            <div class="up-perm-grid">
+                                <c:forEach var="p" items="#{permissions}">
+                                    <c:if test="#{p.branche != null and p.branche.idbranche == b.idbranche}">
+                                        <div class="up-perm-item branch-acc-perm-card" data-perm-id="#{p.idpermission}" data-perm-label="#{fn:escapeXml(p.libelle)}"
+                                             data-perm-ref="#{fn:escapeXml(p.ref)}" data-perm-etat="#{p.etat}" data-perm-branche="#{b.idbranche}">
+                                            <div class="up-perm-info">
+                                                <div class="up-perm-name"><code>#{p.code}</code> #{p.libelle}</div>
+                                                <div class="up-perm-meta">
+                                                    <c:if test="#{p.ref != null and not empty p.ref}">ref: #{p.ref} &#8212; </c:if>
+                                                    <c:choose>
+                                                        <c:when test="#{p.etat == 'ACTIF'}"><span class="status-badge active">#{msg['admin.common.stateActive']}</span></c:when>
+                                                        <c:otherwise><span class="status-badge inactive">#{msg['admin.common.stateInactive']}</span></c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </div>
+                                            <div class="action-btns">
+                                                <button type="button" class="btn btn-sm btn-primary" onclick="editPermission(this)" title="#{msg['admin.common.edit']}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <a class="btn btn-sm btn-danger"
+                                                   href="#{facesContext.externalContext.requestContextPath}/admin/permissions/#{p.idpermission}/delete"
+                                                   onclick="return confirm('#{msg['admin.permissions.confirmDelete']}');" title="#{msg['admin.common.delete']}">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                </c:forEach>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-light branch-acc-add-perm"
+                                    onclick="openPermissionModalForBranch('#{b.idbranche}', this.closest('.branch-acc-item').dataset.branchLabel)">
+                                <i class="fas fa-plus"></i> #{msg['admin.permissions.add']} &#8212; #{b.libelle}
+                            </button>
+                        </div>
+                    </details>
+                </c:forEach>
+
+                <c:set var="hasOrphanPerms" value="false" />
+                <c:forEach var="p" items="#{permissions}">
+                    <c:if test="#{p.branche == null}"><c:set var="hasOrphanPerms" value="true" /></c:if>
+                </c:forEach>
+                <c:if test="#{hasOrphanPerms}">
+                    <details class="branch-acc-item" open="open">
+                        <summary class="branch-acc-header">
+                            <i class="fas fa-chevron-right branch-acc-chevron"></i>
+                            <span class="branch-acc-label"><i class="fas fa-folder-open"></i> #{msg['admin.permissions.branchNone']}</span>
+                            <span class="branch-acc-count"></span>
+                        </summary>
+                        <div class="branch-acc-body">
+                            <div class="up-perm-grid">
+                                <c:forEach var="p" items="#{permissions}">
+                                    <c:if test="#{p.branche == null}">
+                                        <div class="up-perm-item branch-acc-perm-card" data-perm-id="#{p.idpermission}" data-perm-label="#{fn:escapeXml(p.libelle)}"
+                                             data-perm-ref="#{fn:escapeXml(p.ref)}" data-perm-etat="#{p.etat}" data-perm-branche="">
+                                            <div class="up-perm-info">
+                                                <div class="up-perm-name"><code>#{p.code}</code> #{p.libelle}</div>
+                                                <div class="up-perm-meta">
+                                                    <c:if test="#{p.ref != null and not empty p.ref}">ref: #{p.ref} &#8212; </c:if>
+                                                    <c:choose>
+                                                        <c:when test="#{p.etat == 'ACTIF'}"><span class="status-badge active">#{msg['admin.common.stateActive']}</span></c:when>
+                                                        <c:otherwise><span class="status-badge inactive">#{msg['admin.common.stateInactive']}</span></c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </div>
+                                            <div class="action-btns">
+                                                <button type="button" class="btn btn-sm btn-primary" onclick="editPermission(this)" title="#{msg['admin.common.edit']}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <a class="btn btn-sm btn-danger"
+                                                   href="#{facesContext.externalContext.requestContextPath}/admin/permissions/#{p.idpermission}/delete"
+                                                   onclick="return confirm('#{msg['admin.permissions.confirmDelete']}');" title="#{msg['admin.common.delete']}">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </details>
+                </c:if>
+
+                <c:if test="#{empty branches}">
+                    <div class="branch-acc-empty">
+                        <i class="fas fa-info-circle"></i> #{msg['admin.branch.empty']} &#8212;
+                        <a href="#" onclick="openBranchModal(); return false;">#{msg['admin.branch.modalAdd']}</a>
+                    </div>
+                </c:if>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== BRANCH MODAL ===================== -->
+    <div id="branchModal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="branchModalTitle">#{msg['admin.branch.modalAdd']}</h3>
+                <button type="button" class="admin-modal-close" onclick="closeModal('branchModal')">&#215;</button>
+            </div>
+            <form action="#{facesContext.externalContext.requestContextPath}/admin/branches/save" method="post" class="admin-form">
+                <input type="hidden" name="idbranche" id="br_id" />
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>#{msg['admin.branch.fieldLabel']}</label>
+                        <input type="text" name="libelle" id="br_lib" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label>Ref</label>
+                        <input type="text" name="ref" id="br_ref" />
+                    </div>
+                    <div class="form-group">
+                        <label>#{msg['admin.branch.fieldLevel']}</label>
+                        <input type="number" name="niveau" id="br_niv" value="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>#{msg['admin.profile.fieldState']}</label>
+                        <select name="etat" id="br_etat">
+                            <option value="ACTIF">#{msg['admin.common.stateActive']}</option>
+                            <option value="INACTIF">#{msg['admin.common.stateInactive']}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="admin-modal-footer">
+                    <button type="button" class="btn btn-light" onclick="closeModal('branchModal')">#{msg['admin.common.cancel']}</button>
+                    <button type="submit" class="btn btn-primary">#{msg['admin.common.save']}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== PERMISSION MODAL ===================== -->
+    <div id="permissionModal" class="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="permissionModalTitle">#{msg['admin.permissions.modalAdd']}</h3>
+                <button type="button" class="admin-modal-close" onclick="closeModal('permissionModal')">&#215;</button>
+            </div>
+            <form action="#{facesContext.externalContext.requestContextPath}/admin/permissions/save" method="post" class="admin-form">
+                <input type="hidden" name="idpermission" id="perm_id" />
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>#{msg['admin.permissions.fieldLabel']} *</label>
+                        <input type="text" name="libelle" id="perm_lib" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label>#{msg['admin.permissions.fieldRef']}</label>
+                        <input type="text" name="ref" id="perm_ref" />
+                    </div>
+                    <div class="form-group">
+                        <label>#{msg['admin.permissions.fieldBranch']} *</label>
+                        <div id="perm_branche_select_wrap">
+                            <select name="idbranche" id="perm_branche" required="required">
+                                <option value="">#{msg['admin.permissions.branchNone']}</option>
+                                <c:forEach var="b" items="#{branches}">
+                                    <option value="#{b.idbranche}">#{b.libelle} (#{b.code})</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                        <div id="perm_branche_locked" class="form-static-value" style="display:none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>#{msg['admin.permissions.fieldState']}</label>
+                        <select name="etat" id="perm_etat">
+                            <option value="ACTIF">#{msg['admin.common.stateActive']}</option>
+                            <option value="INACTIF">#{msg['admin.common.stateInactive']}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="admin-modal-footer">
+                    <button type="button" class="btn btn-light" onclick="closeModal('permissionModal')">#{msg['admin.common.cancel']}</button>
+                    <button type="submit" class="btn btn-primary">#{msg['admin.common.save']}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    //<![CDATA[
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    /* ---------- Branch Modal ---------- */
+    function openBranchModal() {
+        document.getElementById('branchModalTitle').textContent = document.body.getAttribute('data-msg-branch-add') || '';
+        document.getElementById('br_id').value = '';
+        document.getElementById('br_lib').value = '';
+        document.getElementById('br_ref').value = '';
+        document.getElementById('br_niv').value = '0';
+        document.getElementById('br_etat').value = 'ACTIF';
+        openModal('branchModal');
+    }
+    function editBranch(btn) {
+        var card = btn.closest('.branch-acc-item');
+        document.getElementById('branchModalTitle').textContent = document.body.getAttribute('data-msg-branch-edit') || '';
+        document.getElementById('br_id').value = card.dataset.branchId;
+        document.getElementById('br_lib').value = card.dataset.branchLabel;
+        document.getElementById('br_ref').value = card.dataset.branchRef || '';
+        document.getElementById('br_niv').value = card.dataset.branchNiveau || '0';
+        document.getElementById('br_etat').value = card.dataset.branchEtat || 'ACTIF';
+        openModal('branchModal');
+    }
+
+    /* ---------- Permission Modal ---------- */
+    function resetPermissionBranchLock() {
+        document.getElementById('perm_branche_select_wrap').style.display = '';
+        var locked = document.getElementById('perm_branche_locked');
+        locked.style.display = 'none';
+        locked.textContent = '';
+    }
+    function openPermissionModal() {
+        document.getElementById('permissionModalTitle').textContent = document.body.getAttribute('data-msg-perm-add') || '';
+        document.getElementById('perm_id').value = '';
+        document.getElementById('perm_lib').value = '';
+        document.getElementById('perm_ref').value = '';
+        document.getElementById('perm_etat').value = 'ACTIF';
+        document.getElementById('perm_branche').value = '';
+        resetPermissionBranchLock();
+        openModal('permissionModal');
+    }
+    function openPermissionModalForBranch(idbranche, libelle) {
+        openPermissionModal();
+        document.getElementById('perm_branche').value = idbranche;
+        document.getElementById('perm_branche_select_wrap').style.display = 'none';
+        var locked = document.getElementById('perm_branche_locked');
+        locked.textContent = libelle;
+        locked.style.display = '';
+    }
+    function editPermission(btn) {
+        var card = btn.closest('.up-perm-item');
+        document.getElementById('permissionModalTitle').textContent = document.body.getAttribute('data-msg-perm-edit') || '';
+        document.getElementById('perm_id').value = card.dataset.permId;
+        document.getElementById('perm_lib').value = card.dataset.permLabel;
+        document.getElementById('perm_ref').value = card.dataset.permRef || '';
+        document.getElementById('perm_etat').value = card.dataset.permEtat || 'ACTIF';
+        document.getElementById('perm_branche').value = card.dataset.permBranche || '';
+        resetPermissionBranchLock();
+        openModal('permissionModal');
+    }
+
+    /* ---------- Search across the accordion ---------- */
+    function filterBranchAccordion(query) {
+        var q = (query || '').toLowerCase().trim();
+        document.querySelectorAll('#branchAccordion > details.branch-acc-item').forEach(function (det) {
+            var matches = !q || det.textContent.toLowerCase().indexOf(q) !== -1;
+            det.style.display = matches ? '' : 'none';
+            if (q && matches) { det.open = true; }
+        });
+    }
+
+    /* ---------- Permission count per branch header ---------- */
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.branch-acc-item').forEach(function (det) {
+            var count = det.querySelectorAll('.up-perm-item').length;
+            var countEl = det.querySelector('.branch-acc-count');
+            if (countEl) { countEl.textContent = count + (count > 1 ? ' permissions' : ' permission'); }
+        });
+    });
+    //]]>
+</script>
+
+</ui:composition>

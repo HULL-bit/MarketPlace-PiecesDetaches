@@ -1,0 +1,158 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+            <c:if test="#{not empty success}">
+                <div class="admin-alert success"><i class="fas fa-check-circle"></i> #{success}</div>
+            </c:if>
+            <c:if test="#{not empty error}">
+                <div class="admin-alert error"><i class="fas fa-exclamation-circle"></i> #{error}</div>
+            </c:if>
+
+            <div class="admin-card" style="margin-bottom:1rem;">
+                <div class="admin-card-body" style="font-size:0.95rem;color:#5d6d7e;display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem;">
+                    <span>#{msg['admin.branch.help']}</span>
+                    <a href="#{facesContext.externalContext.requestContextPath}/admin/branches" class="btn btn-sm btn-primary"><i class="fas fa-sitemap"></i> #{msg['admin.permissions.linkBranches']}</a>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">#{msg['admin.permissions.listTitle']}</h3>
+                    <button type="button" class="btn btn-primary" onclick="openPermissionModal()">
+                        <i class="fas fa-plus"></i> #{msg['admin.permissions.add']}
+                    </button>
+                </div>
+                <div class="admin-card-body admin-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>#{msg['admin.permissions.colId']}</th>
+                            <th>#{msg['admin.permissions.colLabel']}</th>
+                            <th>#{msg['admin.permissions.colRef']}</th>
+                            <th>#{msg['admin.permissions.colCode']}</th>
+                            <th>#{msg['admin.permissions.colBranch']}</th>
+                            <th>#{msg['admin.permissions.colState']}</th>
+                            <th>#{msg['admin.common.actions']}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="p" items="#{permissions}">
+                            <tr>
+                                <td>#{p.idpermission}</td>
+                                <td>#{p.libelle}</td>
+                                <td>#{p.ref}</td>
+                                <td>#{p.code}</td>
+                                <td>#{p.branche != null ? p.branche.libelle : ''}</td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="#{p.etat == 'ACTIF'}"><span class="status-badge active">#{msg['admin.common.stateActive']}</span></c:when>
+                                        <c:otherwise><span class="status-badge inactive">#{msg['admin.common.stateInactive']}</span></c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="openPermissionModalFromRow(this)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <a class="btn btn-sm btn-danger"
+                                           href="#{facesContext.externalContext.requestContextPath}/admin/permissions/#{p.idpermission}/delete"
+                                           onclick="return confirm(document.body.getAttribute('data-msg-perm-del'));">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td style="display:none" class="p-id">#{p.idpermission}</td>
+                                <td style="display:none" class="p-lib">#{p.libelle}</td>
+                                <td style="display:none" class="p-ref">#{p.ref}</td>
+                                <td style="display:none" class="p-code">#{p.code}</td>
+                                <td style="display:none" class="p-etat">#{p.etat}</td>
+                                <td style="display:none" class="p-branche">#{p.branche != null ? p.branche.idbranche : ''}</td>
+                            </tr>
+                        </c:forEach>
+                        <c:if test="#{empty permissions}">
+                            <tr><td colspan="7" style="text-align:center; color:#7f8c8d;">#{msg['admin.permissions.empty']}</td></tr>
+                        </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="permissionModal" class="admin-modal">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h3 id="permissionModalTitle">#{msg['admin.permissions.modalAdd']}</h3>
+                        <button type="button" class="admin-modal-close" onclick="closeModal('permissionModal')">&#215;</button>
+                    </div>
+                    <form action="#{facesContext.externalContext.requestContextPath}/admin/permissions/save" method="post" class="admin-form">
+                        <input type="hidden" name="idpermission" id="perm_id" />
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>#{msg['admin.permissions.fieldLabel']} *</label>
+                                <input type="text" name="libelle" id="perm_lib" required="required" />
+                            </div>
+                            <div class="form-group">
+                                <label>#{msg['admin.permissions.fieldRef']}</label>
+                                <input type="text" name="ref" id="perm_ref" />
+                            </div>
+                            <div class="form-group">
+                                <label>#{msg['admin.permissions.fieldCode']}</label>
+                                <input type="number" name="code" id="perm_code" />
+                            </div>
+                            <div class="form-group">
+                                <label>#{msg['admin.permissions.fieldBranch']}</label>
+                                <select name="idbranche" id="perm_branche">
+                                    <option value="">#{msg['admin.permissions.branchNone']}</option>
+                                    <c:forEach var="b" items="#{branches}">
+                                        <option value="#{b.idbranche}">#{b.libelle}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>#{msg['admin.permissions.fieldState']}</label>
+                                <select name="etat" id="perm_etat">
+                                    <option value="ACTIF">#{msg['admin.common.stateActive']}</option>
+                                    <option value="INACTIF">#{msg['admin.common.stateInactive']}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="admin-modal-footer">
+                            <button type="button" class="btn btn-light" onclick="closeModal('permissionModal')">#{msg['admin.common.cancel']}</button>
+                            <button type="submit" class="btn btn-primary">#{msg['admin.common.save']}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+<script>
+    //<![CDATA[
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function openPermissionModal() {
+        document.getElementById('permissionModalTitle').textContent = document.body.getAttribute('data-msg-perm-add') || '';
+        document.getElementById('perm_id').value = '';
+        document.getElementById('perm_lib').value = '';
+        document.getElementById('perm_ref').value = '';
+        document.getElementById('perm_code').value = '';
+        document.getElementById('perm_etat').value = 'ACTIF';
+        document.getElementById('perm_branche').value = '';
+        openModal('permissionModal');
+    }
+
+    function openPermissionModalFromRow(btn) {
+        const tr = btn.closest('tr');
+        document.getElementById('permissionModalTitle').textContent = document.body.getAttribute('data-msg-perm-edit') || '';
+        document.getElementById('perm_id').value = tr.querySelector('.p-id').textContent.trim();
+        document.getElementById('perm_lib').value = tr.querySelector('.p-lib').textContent.trim();
+        document.getElementById('perm_ref').value = tr.querySelector('.p-ref').textContent.trim();
+        document.getElementById('perm_code').value = tr.querySelector('.p-code').textContent.trim();
+        document.getElementById('perm_etat').value = tr.querySelector('.p-etat').textContent.trim() || 'ACTIF';
+        document.getElementById('perm_branche').value = tr.querySelector('.p-branche').textContent.trim();
+        openModal('permissionModal');
+    }
+    //]]>
+</script>
+
+</ui:composition>

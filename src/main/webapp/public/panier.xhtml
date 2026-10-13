@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Panier — AutoPieces Pro</title>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/marketplace-theme.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/mpd-public-theme.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/mpd-panier.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/vendor/fontawesome/css/all.min.css"/>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-branding.js"></script>
+    <script>
+        //<![CDATA[
+        (function () {
+            try {
+                var t = localStorage.getItem('mpd_ui_theme') || 'dark';
+                if (t !== 'light' && t !== 'dark') { t = 'dark'; }
+                document.documentElement.setAttribute('data-mpd-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-mpd-theme', 'dark'); }
+        })();
+        //]]>
+    </script>
+    <style>
+        /* Navbar — identique à l'accueil pour une expérience de site cohérente */
+        .cart-nav-link { position: relative; }
+        .cart-badge {
+            position: absolute; top: -6px; right: -8px;
+            background: #e74c3c; color: #fff; font-size: 0.7rem;
+            min-width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+        .navbar, .mpd-navbar { background: #2c3e50 !important; padding: 0.8rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 10px; left: 5px; right: 5px; width: calc(100% - 10px); z-index: 1000; transition: background 0.25s, box-shadow 0.25s; border-radius: 50px; }
+        .navbar-container { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
+        .navbar-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: #ecf0f1; font-size: 1.2rem; font-weight: 700; }
+        .navbar-brand img { height: 35px; width: auto; border-radius: 50%; }
+        .navbar-nav { display: flex; list-style: none; gap: 0.3rem; }
+        .nav-link { color: #ecf0f1; text-decoration: none; font-weight: 600; transition: all 0.3s; padding: 0.6rem 1.2rem; border-radius: 8px; position: relative; font-size: 1rem; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: #ffffff; transform: translateY(-2px); }
+        .nav-link::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 0; height: 2px; background: #ecf0f1; transition: width 0.3s; }
+        .nav-link:hover::after, .nav-link.active::after { width: 60%; }
+        .nav-link.active { background: rgba(255,255,255,0.12); }
+        .navbar-actions { display: flex; gap: 0.5rem; align-items: center; }
+        .btn { padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.3s; cursor: pointer; border: none; font-size: 0.85rem; }
+        .btn-navbar { background: transparent; color: #ecf0f1; border: 2px solid #bdc3c7; font-size: 0.85rem; padding: 0.5rem 1rem; }
+        .btn-navbar:hover { border-color: #ecf0f1; color: #ecf0f1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+        .btn-lang { background: transparent; color: #ecf0f1; border: 2px solid #3498db; font-size: 0.75rem; padding: 0.35rem 0.7rem; }
+        .btn-lang:hover { background: transparent; color: #ecf0f1; border-color: #ecf0f1; transform: translateY(-2px); }
+        @media (max-width: 992px) { .navbar-nav { display: none; } }
+    </style>
+</head>
+<body class="mpd-site-body mpd-panier-page">
+
+<nav class="navbar mpd-navbar">
+    <div class="navbar-container">
+        <a href="#{facesContext.externalContext.requestContextPath}/" class="navbar-brand">
+            <img src="#{facesContext.externalContext.requestContextPath}/resources/images/logo-officiel.png" alt="AutoPieces Pro" style="border-radius: 50%;" />
+            <span class="brand-text">AutoPieces Pro</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="#{facesContext.externalContext.requestContextPath}/#accueil" class="nav-link">#{msg['nav.home']}</a></li>
+            <li><a href="#{facesContext.externalContext.requestContextPath}/catalogue" class="nav-link">#{msg['nav.parts']}</a></li>
+            <li><a href="#{facesContext.externalContext.requestContextPath}/#magasins" class="nav-link">#{msg['nav.shops']}</a></li>
+            <li><a href="#{facesContext.externalContext.requestContextPath}/#contact" class="nav-link">#{msg['nav.contact']}</a></li>
+        </ul>
+        <div class="navbar-actions" style="display: flex; align-items: center; gap: 0.5rem;">
+            <a href="#{facesContext.externalContext.requestContextPath}/panier" class="btn btn-navbar cart-nav-link active" title="Panier">
+                <i class="fas fa-shopping-cart"></i>
+                <c:if test="#{not empty cartLines}">
+                    <span class="cart-badge">#{fn:length(cartLines)}</span>
+                </c:if>
+            </a>
+            <button type="button" id="mpd-theme-toggle" class="btn btn-lang mpd-btn-theme" aria-label="#{msg['ui.theme.toggle']}"><i class="fas fa-moon"></i></button>
+            <a href="#{facesContext.externalContext.requestContextPath}/login" class="btn btn-navbar">
+                <i class="fas fa-user"></i> #{msg['nav.login']}
+            </a>
+        </div>
+    </div>
+</nav>
+
+<header class="panier-banner">
+    <div class="panier-banner-overlay"></div>
+    <div class="panier-banner-content">
+        <i class="fas fa-shopping-cart panier-banner-icon"></i>
+        <h1>Mon panier</h1>
+        <p>Vérifiez vos articles avant de passer commande.</p>
+    </div>
+</header>
+
+<div class="panier-wrap">
+  <c:if test="#{not empty cartSuccess}">
+    <div class="panier-alert success"><i class="fas fa-check-circle"></i> #{cartSuccess}</div>
+  </c:if>
+
+  <c:choose>
+    <c:when test="#{empty cartLines}">
+      <div class="empty-cart">
+        <i class="fas fa-shopping-basket"></i>
+        <p>Votre panier est vide.</p>
+        <a href="#{facesContext.externalContext.requestContextPath}/catalogue" class="btn btn-primary"><i class="fas fa-search"></i> Voir le catalogue</a>
+      </div>
+    </c:when>
+    <c:otherwise>
+      <div class="panier-layout">
+        <div class="panier-lines">
+          <c:forEach var="line" items="#{cartLines}" varStatus="loop">
+            <div class="panier-line" style="animation-delay: #{loop.index * 0.06}s;">
+              <div class="panier-line-thumb"><i class="fas fa-cog"></i></div>
+              <div class="panier-line-info">
+                <h3>#{line.libelle}</h3>
+                <p class="panier-line-ref"><c:choose><c:when test="#{empty line.ref}">—</c:when><c:otherwise>Réf. #{line.ref}</c:otherwise></c:choose></p>
+                <p class="panier-line-price">#{line.prixUnitaire} FCFA <span>/ unité</span></p>
+              </div>
+              <form action="#{facesContext.externalContext.requestContextPath}/panier/update" method="post" class="panier-qty-form">
+                <input type="hidden" name="idpiece" value="#{line.idpiece}"/>
+                <input type="number" name="quantite" value="#{line.quantite}" min="1" max="99"/>
+                <button type="submit" title="Mettre à jour"><i class="fas fa-sync-alt"></i></button>
+              </form>
+              <div class="panier-line-subtotal">#{line.sousTotal} FCFA</div>
+              <form action="#{facesContext.externalContext.requestContextPath}/panier/remove" method="post">
+                <input type="hidden" name="idpiece" value="#{line.idpiece}"/>
+                <button type="submit" class="panier-remove-btn" title="Retirer"><i class="fas fa-trash"></i></button>
+              </form>
+            </div>
+          </c:forEach>
+        </div>
+
+        <aside class="panier-summary">
+          <h3><i class="fas fa-receipt"></i> Récapitulatif</h3>
+          <div class="panier-summary-row">
+            <span>Articles</span>
+            <span>#{fn:length(cartLines)}</span>
+          </div>
+          <div class="panier-summary-row total">
+            <span>Total</span>
+            <span>#{cartTotal} FCFA</span>
+          </div>
+          <a href="#{facesContext.externalContext.requestContextPath}/panier/commander" class="btn btn-primary panier-checkout-btn">
+            <i class="fas fa-check"></i> Commander
+          </a>
+          <a href="#{facesContext.externalContext.requestContextPath}/catalogue" class="btn btn-outline panier-continue-btn">
+            <i class="fas fa-arrow-left"></i> Ajouter d'autres pièces
+          </a>
+          <p class="panier-summary-note">
+            <i class="fas fa-info-circle"></i> Pour commander, vous devez être connecté. Les visiteurs seront invités à se connecter ou s'inscrire.
+          </p>
+        </aside>
+      </div>
+    </c:otherwise>
+  </c:choose>
+</div>
+
+<script src="#{facesContext.externalContext.requestContextPath}/js/mpd-animations.js"></script>
+<script src="#{facesContext.externalContext.requestContextPath}/js/mpd-theme.js"></script>
+<script>
+    //<![CDATA[
+    var MpdTheme = MpdTheme || { init: function() { /* fallback if script not loaded */ } };
+    MpdTheme.init();
+    //]]>
+</script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+/* Thème clair / sombre (public + admin). Couleur pilotée par data-mpd-theme sur <html>. */
+
+html[data-mpd-theme="light"] body.mpd-site-body {
+    background: #f4f6f8;
+    color: #2c3e50;
+}
+
+html[data-mpd-theme="light"] .mpd-navbar {
+    background: #ffffff !important;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-mpd-theme="light"] .mpd-navbar .navbar-brand,
+html[data-mpd-theme="light"] .mpd-navbar .nav-link,
+html[data-mpd-theme="light"] .mpd-navbar .btn-navbar,
+html[data-mpd-theme="light"] .mpd-navbar .btn-magasin,
+html[data-mpd-theme="light"] .mpd-navbar .brand-text {
+    color: #2c3e50 !important;
+}
+
+html[data-mpd-theme="light"] .mpd-navbar .btn-lang {
+    color: #2c3e50 !important;
+    border-color: #3498db !important;
+}
+
+html[data-mpd-theme="light"] .mpd-navbar .nav-link:hover {
+    background: rgba(44, 62, 80, 0.08) !important;
+    color: #1a252f !important;
+}
+
+html[data-mpd-theme="light"] .mpd-btn-theme {
+    border-color: #bdc3c7 !important;
+    color: #2c3e50 !important;
+}
+
+/* Admin — mode clair : tout passe par les variables --admin-* (admin-layout.css)
+   pour que la personnalisation (mpd-branding.js) s'applique ici aussi, au lieu
+   d'être écrasée par des couleurs codées en dur. */
+html[data-mpd-theme="light"] body.admin-body {
+    background: var(--admin-bg);
+}
+
+html[data-mpd-theme="light"] .admin-sidebar {
+    background: var(--admin-sidebar-bg);
+    color: var(--admin-sidebar-text);
+    border-right: 1px solid var(--admin-border);
+}
+
+html[data-mpd-theme="light"] .admin-sidebar-brand,
+html[data-mpd-theme="light"] .admin-nav-item {
+    color: var(--admin-sidebar-text);
+}
+
+html[data-mpd-theme="light"] .admin-nav-item:hover,
+html[data-mpd-theme="light"] .admin-nav-item.active {
+    background: var(--admin-sidebar-hover);
+    color: var(--admin-sidebar-text);
+}
+
+html[data-mpd-theme="light"] .admin-topbar {
+    background: var(--admin-card);
+    border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-text);
+}
+
+html[data-mpd-theme="light"] .admin-topbar-title {
+    color: var(--admin-text);
+}
+
+.mpd-btn-theme {
+    background: transparent;
+    border: 2px solid #bdc3c7;
+    border-radius: 8px;
+    padding: 0.35rem 0.55rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #ecf0f1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.mpd-btn-theme:hover {
+    transform: translateY(-1px);
+    border-color: #ecf0f1;
+}
+
+html[data-mpd-theme="light"] .admin-topbar-user:hover {
+    background: var(--admin-bg);
+}
+
+.admin-topbar .mpd-btn-theme {
+    color: var(--admin-text);
+    border-color: var(--admin-border);
+    background: var(--admin-card, #fff);
+}
+
+html[data-mpd-theme="dark"] .admin-topbar .mpd-btn-theme {
+    color: var(--admin-text, #e8eaed);
+    border-color: var(--admin-border, #2d3440);
+    background: var(--admin-card, #1e232b);
+}
+
+html[data-mpd-theme="dark"] .admin-topbar .mpd-btn-theme:hover {
+    border-color: #5dade2;
+}
+
+/* Language toggle button in admin topbar */
+.admin-topbar .btn-lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border, #bdc3c7);
+    background: var(--admin-card, #fff);
+    color: var(--admin-text, #2c3e50);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.admin-topbar .btn-lang:hover {
+    border-color: var(--mpd-primary, #0d47a1);
+    background: var(--admin-bg, #ecf0f1);
+}
+html[data-mpd-theme="dark"] .admin-topbar .btn-lang {
+    color: var(--admin-text, #e8eaed);
+    border-color: var(--admin-border, #2d3440);
+    background: var(--admin-card, #1e232b);
+}
+html[data-mpd-theme="dark"] .admin-topbar .btn-lang:hover {
+    border-color: #5dade2;
+}
+
+.login-toolbar {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mpd-lang-link {
+    text-decoration: none;
+}
+
+/* Login — mode sombre (défaut) */
+html[data-mpd-theme="dark"] body.mpd-site-body {
+    background: #0f1218;
+    color: #e8eaed;
+}
+
+html[data-mpd-theme="dark"] .login-form-section {
+    background: #14171d;
+}
+
+html[data-mpd-theme="dark"] .login-title,
+html[data-mpd-theme="dark"] .login-logo i,
+html[data-mpd-theme="dark"] .form-group label {
+    color: #e8eaed;
+}
+
+html[data-mpd-theme="dark"] .login-subtitle {
+    color: #9aa4b2;
+}
+
+html[data-mpd-theme="dark"] .login-form {
+    background: #1e232b;
+    border-color: #2d3440;
+}
+
+html[data-mpd-theme="dark"] .form-group input {
+    background: #252b36;
+    border-color: #2d3440;
+    color: #e8eaed;
+}
+
+html[data-mpd-theme="dark"] .login-btn {
+    background: #5dade2;
+    color: #0f1218;
+}
+
+html[data-mpd-theme="dark"] .login-btn:hover {
+    background: #85c1e9;
+}
+
+html[data-mpd-theme="dark"] .login-signup,
+html[data-mpd-theme="dark"] .remember-me {
+    color: #9aa4b2 !important;
+}
+
+html[data-mpd-theme="dark"] .login-signup a {
+    color: #5dade2;
+}
+
+html[data-mpd-theme="dark"] .login-toolbar .mpd-btn-theme,
+html[data-mpd-theme="dark"] .login-toolbar .mpd-lang-link {
+    color: #e8eaed;
+    border-color: #2d3440;
+}
+
+/* =================== Animations JS partagées (mpd-animations.js) =================== */
+/* .mpd-reveal-pending n'est ajouté que par JS : sans JS, le contenu reste visible. */
+.mpd-reveal-target {
+    transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1), transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mpd-reveal-pending {
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+.mpd-ripple-host {
+    position: relative;
+    overflow: hidden;
+}
+
+.mpd-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+    transform: scale(0);
+    animation: mpdRippleAnim 0.55s ease-out;
+    pointer-events: none;
+}
+
+@keyframes mpdRippleAnim {
+    to { transform: scale(2.4); opacity: 0; }
+}
+
+.navbar.mpd-navbar.navbar-scrolled {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 0;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+}
+
+@keyframes mpdBadgePulse {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.35); }
+    60% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+.cart-badge.mpd-pulse {
+    animation: mpdBadgePulse 0.6s ease 0.3s both;
+}
+
+html[data-mpd-theme="light"] .login-toolbar .mpd-btn-theme,
+html[data-mpd-theme="light"] .login-toolbar .mpd-lang-link {
+    color: #2c3e50;
+    border-color: #bdc3c7;
+}

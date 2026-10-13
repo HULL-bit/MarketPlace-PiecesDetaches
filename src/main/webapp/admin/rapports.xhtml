@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<head>
+    <ui:include src="/WEB-INF/fragments/adminHead.xhtml"/>
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <ui:include src="/WEB-INF/fragments/adminSidebar.xhtml"><ui:param name="adminNav" value="rapports"/></ui:include>
+    <div class="admin-main">
+        <ui:include src="/WEB-INF/fragments/adminTopbar.xhtml"/>
+        <div class="admin-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Commandes</span>
+                        <div class="stat-card-icon red"><i class="fas fa-shopping-cart"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{totalCommandes != null ? totalCommandes : 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Clients</span>
+                        <div class="stat-card-icon blue"><i class="fas fa-users"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{totalClients != null ? totalClients : 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Boutiques</span>
+                        <div class="stat-card-icon green"><i class="fas fa-store"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{totalBoutiques != null ? totalBoutiques : 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Pièces</span>
+                        <div class="stat-card-icon orange"><i class="fas fa-cog"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{totalPieces != null ? totalPieces : 0}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

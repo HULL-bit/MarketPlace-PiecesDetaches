@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+    <ui:include src="/WEB-INF/fragments/adminHead.xhtml"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/admin-module.css"/>
+</head>
+<body class="admin-body admin-module-page" data-default-tab="initialisation">
+<c:set var="dash" value="#{empty dash ? adminDashboardView.dash : dash}"/>
+<div class="admin-layout">
+    <ui:include src="/WEB-INF/fragments/adminSidebar.xhtml"><ui:param name="adminNav" value="module-parametres"/></ui:include>
+    <div class="admin-main">
+        <ui:include src="/WEB-INF/fragments/adminTopbar.xhtml"/>
+        <div class="admin-content">
+            <div class="module-stats-grid stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Commandes</span><div class="stat-card-icon blue"><i class="fas fa-chart-bar"></i></div></div>
+                    <div class="stat-card-value">#{totalCommandes}</div>
+                    <div class="stat-card-change">Rapports</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Clients</span><div class="stat-card-icon green"><i class="fas fa-user"></i></div></div>
+                    <div class="stat-card-value">#{totalClients}</div>
+                    <div class="stat-card-change">Inscrits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Boutiques</span><div class="stat-card-icon orange"><i class="fas fa-store"></i></div></div>
+                    <div class="stat-card-value">#{totalBoutiques}</div>
+                    <div class="stat-card-change">Partenaires</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Pièces</span><div class="stat-card-icon red"><i class="fas fa-cog"></i></div></div>
+                    <div class="stat-card-value">#{totalPieces}</div>
+                    <div class="stat-card-change">Catalogue</div>
+                </div>
+            </div>
+            <nav class="module-tabs" aria-label="Paramètres">
+                <button type="button" class="module-tab" data-tab="initialisation"><i class="fas fa-database"></i> Initialisation</button>
+                <button type="button" class="module-tab" data-tab="apparence"><i class="fas fa-palette"></i> Apparence</button>
+                <button type="button" class="module-tab" data-tab="rapports"><i class="fas fa-chart-bar"></i> Rapports</button>
+                <button type="button" class="module-tab" data-tab="profil"><i class="fas fa-user-circle"></i> Mon profil</button>
+            </nav>
+            <div class="module-panels">
+                <div class="module-panel" data-panel="initialisation"><ui:include src="/WEB-INF/fragments/admin/panels/initialisation-panel.xhtml"/></div>
+                <div class="module-panel" data-panel="apparence"><ui:include src="/WEB-INF/fragments/admin/panels/parametres-branding-panel.xhtml"/></div>
+                <div class="module-panel" data-panel="rapports"><ui:include src="/WEB-INF/fragments/admin/panels/rapports-panel.xhtml"/></div>
+                <div class="module-panel" data-panel="profil"><ui:include src="/WEB-INF/fragments/admin/panels/profil-panel.xhtml"/></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="#{facesContext.externalContext.requestContextPath}/js/admin-module.js"></script>
+</body>
+</html>

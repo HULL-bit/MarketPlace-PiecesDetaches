@@ -1,0 +1,22 @@
+# Build / dépendances locales
+target/
+.m2/
+lib/
+
+# Métadonnées IDE / workspace
+.metadata/
+.settings/
+.classpath
+.project
+.apt_generated/
+.apt_generated_tests/
+RemoteSystemsTempFiles/
+.vscode/
+
+# Outils / caches locaux
+.claude/
+arms_cache/
+
+# OS
+.DS_Store
+Thumbs.db

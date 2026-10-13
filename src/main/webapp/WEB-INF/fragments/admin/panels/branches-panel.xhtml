@@ -1,0 +1,149 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+            <c:if test="#{not empty success}">
+                <div class="admin-alert success"><i class="fas fa-check-circle"></i> #{success}</div>
+            </c:if>
+            <c:if test="#{not empty error}">
+                <div class="admin-alert error"><i class="fas fa-exclamation-circle"></i> #{error}</div>
+            </c:if>
+
+            <div class="admin-card" style="margin-bottom:1rem;">
+                <div class="admin-card-body" style="font-size:0.95rem;color:#5d6d7e;">
+                    #{msg['admin.branch.help']}
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">#{msg['admin.branch.listTitle']}</h3>
+                    <button type="button" class="btn btn-primary" onclick="openBranchModal()">
+                        <i class="fas fa-plus"></i> #{msg['admin.common.add']}
+                    </button>
+                </div>
+                <div class="admin-card-body admin-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>#{msg['admin.branch.colLabel']}</th>
+                            <th>#{msg['admin.permissions.colRef']}</th>
+                            <th>#{msg['admin.permissions.colCode']}</th>
+                            <th>#{msg['admin.branch.colLevel']}</th>
+                            <th>#{msg['admin.profile.colState']}</th>
+                            <th>#{msg['admin.common.actions']}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="b" items="#{branches}">
+                            <tr>
+                                <td>#{b.idbranche}</td>
+                                <td>#{b.libelle}</td>
+                                <td>#{b.ref}</td>
+                                <td>#{b.code}</td>
+                                <td>#{b.niveau}</td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="#{b.etat == 'ACTIF'}"><span class="status-badge active">#{msg['admin.common.stateActive']}</span></c:when>
+                                        <c:otherwise><span class="status-badge inactive">#{msg['admin.common.stateInactive']}</span></c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="openBranchModalFromRow(this)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <a class="btn btn-sm btn-danger"
+                                           href="#{facesContext.externalContext.requestContextPath}/admin/branches/#{b.idbranche}/delete"
+                                           onclick="return confirm('Supprimer cette branche ?');">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td style="display:none" class="br-id">#{b.idbranche}</td>
+                                <td style="display:none" class="br-lib">#{b.libelle}</td>
+                                <td style="display:none" class="br-ref">#{b.ref}</td>
+                                <td style="display:none" class="br-code">#{b.code}</td>
+                                <td style="display:none" class="br-niv">#{b.niveau}</td>
+                                <td style="display:none" class="br-etat">#{b.etat}</td>
+                            </tr>
+                        </c:forEach>
+                        <c:if test="#{empty branches}">
+                            <tr><td colspan="7" style="text-align:center;color:#7f8c8d;">#{msg['admin.branch.empty']}</td></tr>
+                        </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="branchModal" class="admin-modal">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h3 id="branchModalTitle">#{msg['admin.branch.modalAdd']}</h3>
+                        <button type="button" class="admin-modal-close" onclick="closeModal('branchModal')">&#215;</button>
+                    </div>
+                    <form action="#{facesContext.externalContext.requestContextPath}/admin/branches/save" method="post" class="admin-form">
+                        <input type="hidden" name="idbranche" id="br_id" />
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>#{msg['admin.branch.fieldLabel']}</label>
+                                <input type="text" name="libelle" id="br_lib" required="required" />
+                            </div>
+                            <div class="form-group">
+                                <label>Ref</label>
+                                <input type="text" name="ref" id="br_ref" />
+                            </div>
+                            <div class="form-group">
+                                <label>Code</label>
+                                <input type="number" name="code" id="br_code" />
+                            </div>
+                            <div class="form-group">
+                                <label>#{msg['admin.branch.fieldLevel']}</label>
+                                <input type="number" name="niveau" id="br_niv" value="0" />
+                            </div>
+                            <div class="form-group">
+                                <label>#{msg['admin.profile.fieldState']}</label>
+                                <select name="etat" id="br_etat">
+                                    <option value="ACTIF">#{msg['admin.common.stateActive']}</option>
+                                    <option value="INACTIF">#{msg['admin.common.stateInactive']}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="admin-modal-footer">
+                            <button type="button" class="btn btn-light" onclick="closeModal('branchModal')">#{msg['admin.common.cancel']}</button>
+                            <button type="submit" class="btn btn-primary">#{msg['admin.common.save']}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+<script>
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function openBranchModal() {
+        document.getElementById('branchModalTitle').textContent = document.body.getAttribute('data-msg-branch-add') || '';
+        document.getElementById('br_id').value = '';
+        document.getElementById('br_lib').value = '';
+        document.getElementById('br_ref').value = '';
+        document.getElementById('br_code').value = '';
+        document.getElementById('br_niv').value = '0';
+        document.getElementById('br_etat').value = 'ACTIF';
+        openModal('branchModal');
+    }
+    function openBranchModalFromRow(btn) {
+        const tr = btn.closest('tr');
+        document.getElementById('branchModalTitle').textContent = document.body.getAttribute('data-msg-branch-edit') || '';
+        document.getElementById('br_id').value = tr.querySelector('.br-id').textContent.trim();
+        document.getElementById('br_lib').value = tr.querySelector('.br-lib').textContent.trim();
+        document.getElementById('br_ref').value = tr.querySelector('.br-ref').textContent.trim();
+        document.getElementById('br_code').value = tr.querySelector('.br-code').textContent.trim();
+        document.getElementById('br_niv').value = tr.querySelector('.br-niv').textContent.trim() || '0';
+        document.getElementById('br_etat').value = tr.querySelector('.br-etat').textContent.trim() || 'ACTIF';
+        openModal('branchModal');
+    }
+</script>
+
+</ui:composition>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+    <ui:include src="/WEB-INF/fragments/adminHead.xhtml"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/admin-module.css"/>
+</head>
+<body class="admin-body admin-module-page" data-default-tab="pieces">
+<c:set var="dash" value="#{empty dash ? adminDashboardView.dash : dash}"/>
+<div class="admin-layout">
+    <ui:include src="/WEB-INF/fragments/adminSidebar.xhtml"><ui:param name="adminNav" value="module-pieces"/></ui:include>
+    <div class="admin-main">
+        <ui:include src="/WEB-INF/fragments/adminTopbar.xhtml"/>
+        <div class="admin-content">
+            <div class="module-stats-grid stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Pièces</span><div class="stat-card-icon blue"><i class="fas fa-cog"></i></div></div>
+                    <div class="stat-card-value">#{dash.totalPieces}</div>
+                    <div class="stat-card-change">#{dash.piecesDisponibles} disponibles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Catégories</span><div class="stat-card-icon green"><i class="fas fa-tags"></i></div></div>
+                    <div class="stat-card-value">#{dash.totalCategories}</div>
+                    <div class="stat-card-change">Référentiel</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Commandes</span><div class="stat-card-icon orange"><i class="fas fa-shopping-cart"></i></div></div>
+                    <div class="stat-card-value">#{dash.totalCommandes}</div>
+                    <div class="stat-card-change">#{dash.commandesEnAttente} en attente</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">CA livré</span><div class="stat-card-icon red"><i class="fas fa-coins"></i></div></div>
+                    <div class="stat-card-value"><h:outputText value="#{dash.chiffreAffairesFcfa}"><f:convertNumber groupingUsed="true"/></h:outputText></div>
+                    <div class="stat-card-change">FCFA</div>
+                </div>
+            </div>
+            <nav class="module-tabs" aria-label="Pièces">
+                <button type="button" class="module-tab" data-tab="pieces"><i class="fas fa-cog"></i> Pièces</button>
+                <button type="button" class="module-tab" data-tab="modeles"><i class="fas fa-car"></i> Modèles</button>
+                <button type="button" class="module-tab" data-tab="categories"><i class="fas fa-tags"></i> Catégories</button>
+            </nav>
+            <div class="module-panels">
+                <div class="module-panel" data-panel="pieces"><ui:include src="/WEB-INF/fragments/admin/panels/pieces-panel.xhtml"/></div>
+                <div class="module-panel" data-panel="modeles"><ui:include src="/WEB-INF/fragments/admin/panels/modeles-panel.xhtml"/></div>
+                <div class="module-panel" data-panel="categories"><ui:include src="/WEB-INF/fragments/admin/panels/categories-panel.xhtml"/></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="#{facesContext.externalContext.requestContextPath}/js/admin-module.js"></script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+            <c:if test="#{not empty success}">
+                <div class="admin-alert success"><i class="fas fa-check-circle"></i> #{success}</div>
+            </c:if>
+            <c:if test="#{not empty error}">
+                <div class="admin-alert error"><i class="fas fa-exclamation-circle"></i> #{error}</div>
+            </c:if>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title"><i class="fas fa-cog" style="margin-right:0.5rem;color:var(--mpd-primary,#0d47a1);"></i>Catalogue pièces</h3>
+                        <p class="admin-card-subtitle">#{fn:length(pieces)} pièce(s) référencée(s)</p>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="openPieceModal(null)"><i class="fas fa-plus"></i> Ajouter une pièce</button>
+                </div>
+                <div class="admin-card-body">
+                    <div class="dt-filter-bar" style="margin-bottom:0.75rem;">
+                        <input type="text" class="dt-filter-input" data-table="piecesTable" placeholder="&#128269; Libellé / Marque / Modèle..." />
+                        <select class="dt-filter-select" data-table="piecesTable" data-col="10">
+                            <option value="">Statut...</option>
+                            <option value="DISPONIBLE">DISPONIBLE</option>
+                            <option value="INDISPONIBLE">INDISPONIBLE</option>
+                            <option value="RUPTURE">RUPTURE</option>
+                        </select>
+                        <select class="dt-filter-select" data-table="piecesTable" data-col="6">
+                            <option value="">Boutique...</option>
+                            <c:forEach var="bq" items="#{boutiques}">
+                                <option value="#{bq.libelle}">#{bq.libelle}</option>
+                            </c:forEach>
+                        </select>
+                        <select class="dt-filter-select" data-table="piecesTable" data-col="7">
+                            <option value="">Catégorie...</option>
+                            <c:forEach var="cat" items="#{categories}">
+                                <option value="#{cat.libelle}">#{cat.libelle}</option>
+                            </c:forEach>
+                        </select>
+                        <button type="button" class="btn btn-sm btn-light dt-filter-reset" data-table="piecesTable">
+                            <i class="fas fa-eraser"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body admin-table-wrap">
+                    <table class="data-table dt-filterable" id="piecesTable">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>ID</th>
+                            <th>Libellé</th>
+                            <th>Marque</th>
+                            <th>Modèle</th>
+                            <th>Année</th>
+                            <th>Boutique</th>
+                            <th>Catégorie</th>
+                            <th>Prix vente</th>
+                            <th>Stock</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="piece" items="#{pieces}">
+                            <tr>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="#{not empty piece.image}">
+                                            <img src="#{piece.image}" alt="" class="piece-thumb"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="piece-thumb piece-thumb-fallback"><i class="fas fa-cog"></i></span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>#{piece.idpiece}</td>
+                                <td>#{piece.libelle}</td>
+                                <td>#{piece.piecemodele != null ? piece.piecemodele.marque : '—'}</td>
+                                <td>#{piece.piecemodele != null ? piece.piecemodele.modele : '—'}</td>
+                                <td>#{piece.piecemodele != null ? piece.piecemodele.annee : '—'}</td>
+                                <td>#{piece.boutique != null ? piece.boutique.libelle : '—'}</td>
+                                <td>#{piece.categoriepiece != null ? piece.categoriepiece.libelle : '—'}</td>
+                                <td>#{not empty piece.prix ? piece.prix[0].vente : '—'}</td>
+                                <td>
+                                    <span class="#{piece.nombre != null and piece.nombre gt 0 ? 'badge-info' : 'badge-danger'}">#{piece.nombre != null ? piece.nombre : 0}</span>
+                                </td>
+                                <td>
+                                    <span class="#{piece.etat eq 'DISPONIBLE' ? 'badge-success' : (piece.etat eq 'RUPTURE' ? 'badge-danger' : 'badge-warning')}"><h:outputText value="#{piece.etat}"/></span>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="openPieceModalFromRow(this)"><i class="fas fa-edit"></i></button>
+                                        <a href="#{facesContext.externalContext.requestContextPath}/admin/pieces/#{piece.idpiece}/delete"
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Supprimer cette pièce ?');"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                                <td style="display:none;" class="pm-ref"><h:outputText value="#{piece.ref}"/></td>
+                                <td style="display:none;" class="pm-desc"><h:outputText value="#{piece.description}"/></td>
+                                <td style="display:none;" class="pm-etat"><h:outputText value="#{piece.etat}"/></td>
+                                <td style="display:none;" class="pm-boutique">#{piece.boutique != null ? piece.boutique.idboutique : ''}</td>
+                                <td style="display:none;" class="pm-cat">#{piece.categoriepiece != null ? piece.categoriepiece.idcatpiece : ''}</td>
+                                <td style="display:none;" class="pm-marque">#{piece.piecemodele != null ? piece.piecemodele.marque : ''}</td>
+                                <td style="display:none;" class="pm-modele">#{piece.piecemodele != null ? piece.piecemodele.modele : ''}</td>
+                                <td style="display:none;" class="pm-annee">#{piece.piecemodele != null ? piece.piecemodele.annee : ''}</td>
+                                <td style="display:none;" class="pm-idmodele">#{piece.piecemodele != null ? piece.piecemodele.idpiecemodele : ''}</td>
+                                <td style="display:none;" class="pm-serie"><h:outputText value="#{piece.serie}"/></td>
+                                <td style="display:none;" class="pm-image"><h:outputText value="#{piece.image}"/></td>
+                                <td style="display:none;" class="pm-achat">#{not empty piece.prix ? piece.prix[0].achat : ''}</td>
+                                <td style="display:none;" class="pm-vente">#{not empty piece.prix ? piece.prix[0].vente : ''}</td>
+                                <td style="display:none;" class="pm-tva">#{not empty piece.prix ? piece.prix[0].tva : ''}</td>
+                                <td style="display:none;" class="pm-reduction">#{not empty piece.prix ? piece.prix[0].reduction : ''}</td>
+                                <td style="display:none;" class="pm-code">#{piece.code}</td>
+                                <td style="display:none;" class="pm-nombre">#{piece.nombre}</td>
+                                <td style="display:none;" class="pm-couleur"><h:outputText value="#{piece.couleur}"/></td>
+                                <td style="display:none;" class="pm-id">#{piece.idpiece}</td>
+                            </tr>
+                        </c:forEach>
+                        <c:if test="#{empty pieces}">
+                            <tr><td colspan="12" style="text-align:center;padding:2rem;color:#7f8c8d;">Aucune pièce</td></tr>
+                        </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+<div id="pieceModal" class="modal">
+    <div class="modal-content" style="max-width:780px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="pieceModalTitle">Pi&#232;ce</h3>
+            <button type="button" class="close-btn" onclick="document.getElementById('pieceModal').classList.remove('active')">&#215;</button>
+        </div>
+        <form action="#{facesContext.externalContext.requestContextPath}/admin/pieces/save" method="POST">
+            <input type="hidden" name="idpiece" id="p_id"/>
+            <input type="hidden" name="idpiecemodele" id="p_idmodele"/>
+            <h4 style="margin:0 0 0.75rem;font-size:1rem;color:var(--admin-muted, #7f8c8d);">
+                <i class="fas fa-info-circle"></i> Informations g&#233;n&#233;rales
+            </h4>
+            <div class="form-group">
+                <label>Libell&#233; *</label>
+                <input type="text" name="libelle" id="p_libelle" required="required" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>R&#233;f&#233;rence</label>
+                    <input type="text" name="ref" id="p_ref" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                </div>
+                <div class="form-group">
+                    <label>Code</label>
+                    <input type="number" name="code" id="p_code" placeholder="Code interne" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                </div>
+                <div class="form-group">
+                    <label>Quantit&#233; en stock</label>
+                    <input type="number" name="nombre" id="p_nombre" min="0" placeholder="0" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                </div>
+                <div class="form-group">
+                    <label>&#201;tat</label>
+                    <select name="etat" id="p_etat" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;">
+                        <option value="DISPONIBLE">DISPONIBLE</option>
+                        <option value="INDISPONIBLE">INDISPONIBLE</option>
+                        <option value="RUPTURE">RUPTURE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" id="p_desc" rows="3" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Couleur</label>
+                <input type="text" name="couleur" id="p_couleur" list="couleurs_list" placeholder="Ex: Rouge, Noir, Gris..." style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                <datalist id="couleurs_list">
+                    <option value="Blanc"/>
+                    <option value="Noir"/>
+                    <option value="Gris"/>
+                    <option value="Argent"/>
+                    <option value="Rouge"/>
+                    <option value="Bleu"/>
+                    <option value="Vert"/>
+                    <option value="Jaune"/>
+                    <option value="Marron"/>
+                    <option value="Beige"/>
+                </datalist>
+            </div>
+
+            <h4 style="margin:1.25rem 0 0.75rem;font-size:1rem;color:var(--admin-muted, #7f8c8d);border-top:1px solid var(--admin-border, #bdc3c7);padding-top:1rem;">
+                <i class="fas fa-car"></i> V&#233;hicule compatible
+            </h4>
+            <div class="form-group">
+                <label>Mod&#232;le v&#233;hicule (s&#233;lectionnez ou cr&#233;ez un nouveau)</label>
+                <select id="p_modele_select" onchange="applyPieceModele(this)" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;">
+                    <option value="">— Choisir un mod&#232;le existant —</option>
+                    <c:forEach var="pm" items="#{pieceModeles}">
+                        <option value="#{pm.idpiecemodele}"
+                                data-marque="#{pm.marque}"
+                                data-modele="#{pm.modele}"
+                                data-annee="#{pm.annee}">#{pm.libelle}</option>
+                    </c:forEach>
+                    <option value="__new__">+ Nouveau mod&#232;le (saisie manuelle)</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Marque</label>
+                    <input type="text" name="marque" id="p_marque" list="marques_list" placeholder="Saisir ou choisir..." style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                    <datalist id="marques_list">
+                        <c:forEach var="pm" items="#{pieceModeles}">
+                            <option value="#{pm.marque}"/>
+                        </c:forEach>
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label>Mod&#232;le</label>
+                    <input type="text" name="modele" id="p_modele" list="modeles_list" placeholder="Saisir ou choisir..." style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                    <datalist id="modeles_list">
+                        <c:forEach var="pm" items="#{pieceModeles}">
+                            <option value="#{pm.modele}"/>
+                        </c:forEach>
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label>Ann&#233;e</label>
+                    <select name="annee" id="p_annee" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;">
+                        <option value="">— Choisir —</option>
+                        <c:forEach var="a" items="#{anneesConfig}">
+                            <option value="#{a.code}">#{a.nom}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>S&#233;rie / VIN</label>
+                    <input type="text" name="serie" id="p_serie" placeholder="Ex: VIN / S&#233;rie" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                </div>
+                <div class="form-group">
+                    <label>Boutique</label>
+                    <select name="idboutique" id="p_boutique" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;">
+                        <option value="">— Aucune —</option>
+                        <c:forEach var="bq" items="#{boutiques}">
+                            <option value="#{bq.idboutique}">#{bq.libelle}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cat&#233;gorie</label>
+                    <select name="idcatpiece" id="p_cat" onchange="applyCategorieSelect(this)" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;">
+                        <option value="">— Aucune —</option>
+                        <c:forEach var="cat" items="#{categories}">
+                            <option value="#{cat.idcatpiece}">#{cat.libelle}</option>
+                        </c:forEach>
+                        <option value="__new__">+ Nouvelle cat&#233;gorie (saisie manuelle)</option>
+                    </select>
+                    <input type="text" name="nouvelleCategorie" id="p_cat_new" placeholder="Nom de la nouvelle cat&#233;gorie" style="display:none;width:100%;padding:0.75rem 1rem;font-size:1.05rem;margin-top:0.5rem;"/>
+                </div>
+            </div>
+
+            <h4 style="margin:1.25rem 0 0.75rem;font-size:1rem;color:var(--admin-muted, #7f8c8d);border-top:1px solid var(--admin-border, #bdc3c7);padding-top:1rem;">
+                <i class="fas fa-tag"></i> Prix &amp; image
+            </h4>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Prix d'achat</label>
+                    <input type="number" name="achat" id="p_achat" min="0" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                </div>
+                <div class="form-group">
+                    <label>Prix de vente</label>
+                    <input type="number" name="vente" id="p_vente" min="0" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                </div>
+                <div class="form-group">
+                    <label>TVA (%)</label>
+                    <input type="number" name="tva" id="p_tva" min="0" max="100" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                </div>
+                <div class="form-group">
+                    <label>R&#233;duction (%)</label>
+                    <input type="number" name="reduction" id="p_reduction" min="0" max="100" style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Image (URL)</label>
+                <input type="text" name="image" id="p_image" placeholder="/resources/images/..." style="width:100%;padding:0.75rem 1rem;font-size:1.05rem;"/>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('pieceModal').classList.remove('active')">Annuler</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    //<![CDATA[
+    function applyPieceModele(sel) {
+        var val = sel.value;
+        if (val === '__new__') {
+            document.getElementById('p_marque').value = '';
+            document.getElementById('p_modele').value = '';
+            document.getElementById('p_annee').value = '';
+            document.getElementById('p_idmodele').value = '';
+            document.getElementById('p_marque').focus();
+        } else if (val) {
+            var opt = sel.options[sel.selectedIndex];
+            document.getElementById('p_marque').value = opt.getAttribute('data-marque') || '';
+            document.getElementById('p_modele').value = opt.getAttribute('data-modele') || '';
+            document.getElementById('p_annee').value = opt.getAttribute('data-annee') || '';
+            document.getElementById('p_idmodele').value = val;
+        } else {
+            document.getElementById('p_marque').value = '';
+            document.getElementById('p_modele').value = '';
+            document.getElementById('p_annee').value = '';
+            document.getElementById('p_idmodele').value = '';
+        }
+    }
+    function applyCategorieSelect(sel) {
+        var newInput = document.getElementById('p_cat_new');
+        if (sel.value === '__new__') {
+            sel.removeAttribute('name');
+            newInput.style.display = '';
+            newInput.focus();
+        } else {
+            sel.setAttribute('name', 'idcatpiece');
+            newInput.style.display = 'none';
+            newInput.value = '';
+        }
+    }
+    function openPieceModal(id) {
+        document.getElementById('pieceModalTitle').textContent = id ? 'Modifier la pièce' : 'Nouvelle pièce';
+        document.getElementById('p_id').value = id ? id : '';
+        document.getElementById('p_idmodele').value = '';
+        document.getElementById('p_modele_select').value = '';
+        document.getElementById('p_libelle').value = '';
+        document.getElementById('p_ref').value = '';
+        document.getElementById('p_code').value = '';
+        document.getElementById('p_nombre').value = '';
+        document.getElementById('p_desc').value = '';
+        document.getElementById('p_couleur').value = '';
+        document.getElementById('p_marque').value = '';
+        document.getElementById('p_modele').value = '';
+        document.getElementById('p_annee').value = '';
+        document.getElementById('p_serie').value = '';
+        document.getElementById('p_etat').value = 'DISPONIBLE';
+        document.getElementById('p_boutique').value = '';
+        document.getElementById('p_cat').setAttribute('name', 'idcatpiece');
+        document.getElementById('p_cat').value = '';
+        document.getElementById('p_cat_new').style.display = 'none';
+        document.getElementById('p_cat_new').value = '';
+        document.getElementById('p_image').value = '';
+        document.getElementById('p_achat').value = '';
+        document.getElementById('p_vente').value = '';
+        document.getElementById('p_tva').value = '';
+        document.getElementById('p_reduction').value = '';
+        document.getElementById('pieceModal').classList.add('active');
+    }
+    function openPieceModalFromRow(btn) {
+        var tr = btn.closest('tr');
+        document.getElementById('pieceModalTitle').textContent = 'Modifier la pièce';
+        document.getElementById('p_id').value = tr.querySelector('.pm-id').textContent.trim();
+        var idmodele = tr.querySelector('.pm-idmodele').textContent.trim();
+        document.getElementById('p_idmodele').value = idmodele;
+        document.getElementById('p_modele_select').value = idmodele;
+        document.getElementById('p_libelle').value = tr.cells[2].innerText.trim();
+        document.getElementById('p_ref').value = tr.querySelector('.pm-ref').textContent.trim();
+        document.getElementById('p_code').value = tr.querySelector('.pm-code').textContent.trim();
+        document.getElementById('p_nombre').value = tr.querySelector('.pm-nombre').textContent.trim();
+        document.getElementById('p_couleur').value = tr.querySelector('.pm-couleur').textContent.trim();
+        document.getElementById('p_desc').value = tr.querySelector('.pm-desc').textContent.trim();
+        document.getElementById('p_image').value = tr.querySelector('.pm-image').textContent.trim();
+        document.getElementById('p_achat').value = tr.querySelector('.pm-achat').textContent.trim();
+        document.getElementById('p_vente').value = tr.querySelector('.pm-vente').textContent.trim();
+        document.getElementById('p_tva').value = tr.querySelector('.pm-tva').textContent.trim();
+        document.getElementById('p_reduction').value = tr.querySelector('.pm-reduction').textContent.trim();
+        document.getElementById('p_marque').value = tr.querySelector('.pm-marque').textContent.trim();
+        document.getElementById('p_modele').value = tr.querySelector('.pm-modele').textContent.trim();
+        document.getElementById('p_annee').value = tr.querySelector('.pm-annee').textContent.trim();
+        document.getElementById('p_serie').value = tr.querySelector('.pm-serie').textContent.trim();
+        document.getElementById('p_etat').value = tr.querySelector('.pm-etat').textContent.trim() || 'DISPONIBLE';
+        var bid = tr.querySelector('.pm-boutique').textContent.trim();
+        document.getElementById('p_boutique').value = bid;
+        var cid = tr.querySelector('.pm-cat').textContent.trim();
+        document.getElementById('p_cat').setAttribute('name', 'idcatpiece');
+        document.getElementById('p_cat').value = cid;
+        document.getElementById('p_cat_new').style.display = 'none';
+        document.getElementById('p_cat_new').value = '';
+        document.getElementById('pieceModal').classList.add('active');
+    }
+    window.onclick = function (ev) {
+        var m = document.getElementById('pieceModal');
+        if (ev.target === m) m.classList.remove('active');
+    };
+    //]]>
+</script>
+
+</ui:composition>

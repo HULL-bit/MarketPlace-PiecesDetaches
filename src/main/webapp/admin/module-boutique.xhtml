@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+    <ui:include src="/WEB-INF/fragments/adminHead.xhtml"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/admin-module.css"/>
+</head>
+<body class="admin-body admin-module-page" data-default-tab="boutiques">
+<c:set var="dash" value="#{empty dash ? adminDashboardView.dash : dash}"/>
+<div class="admin-layout">
+    <ui:include src="/WEB-INF/fragments/adminSidebar.xhtml"><ui:param name="adminNav" value="module-boutique"/></ui:include>
+    <div class="admin-main">
+        <ui:include src="/WEB-INF/fragments/adminTopbar.xhtml"/>
+        <div class="admin-content">
+            <div class="module-stats-grid stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Boutiques</span><div class="stat-card-icon blue"><i class="fas fa-store"></i></div></div>
+                    <div class="stat-card-value">#{dash.totalBoutiques}</div>
+                    <div class="stat-card-change">#{dash.activeBoutiques} actives</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Vendeurs</span><div class="stat-card-icon green"><i class="fas fa-user-tie"></i></div></div>
+                    <div class="stat-card-value">#{dash.nbVendeurs}</div>
+                    <div class="stat-card-change">Comptes magasin</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header"><span class="stat-card-title">Pièces liées</span><div class="stat-card-icon orange"><i class="fas fa-box"></i></div></div>
+                    <div class="stat-card-value">#{dash.totalPieces}</div>
+                    <div class="stat-card-change">Stock catalogue</div>
+                </div>
+            </div>
+            <nav class="module-tabs" aria-label="Boutique">
+                <button type="button" class="module-tab" data-tab="boutiques"><i class="fas fa-store"></i> Boutiques</button>
+                <button type="button" class="module-tab" data-tab="carte"><i class="fas fa-map-marked-alt"></i> Carte</button>
+            </nav>
+            <div class="module-panels">
+                <div class="module-panel" data-panel="boutiques"><ui:include src="/WEB-INF/fragments/admin/panels/boutiques-panel.xhtml"/></div>
+                <div class="module-panel" data-panel="carte"><ui:include src="/WEB-INF/fragments/admin/panels/carte-panel.xhtml"/></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="#{facesContext.externalContext.requestContextPath}/js/admin-module.js"></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<head>
+    <ui:include src="/WEB-INF/fragments/adminHead.xhtml"/>
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <ui:include src="/WEB-INF/fragments/adminSidebar.xhtml"><ui:param name="adminNav" value="boutiques"/></ui:include>
+    <div class="admin-main">
+        <ui:include src="/WEB-INF/fragments/adminTopbar.xhtml"/>
+        <div class="admin-content">
+            <c:if test="#{not empty success}">
+                <div class="admin-alert success"><i class="fas fa-check-circle"></i> #{success}</div>
+            </c:if>
+            <c:if test="#{not empty error}">
+                <div class="admin-alert error"><i class="fas fa-exclamation-circle"></i> #{error}</div>
+            </c:if>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Boutiques</h3>
+                    <button type="button" class="btn btn-primary" onclick="openBoutiqueModal(null)"><i class="fas fa-plus"></i> Ajouter</button>
+                </div>
+                <div class="admin-card-body admin-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>Boutique</th>
+                            <th>E-mail</th>
+                            <th>Contacts</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="boutique" items="#{boutiques}">
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <span style="width:36px;height:36px;border-radius:8px;background:#34495e;color:#fff;display:flex;align-items:center;justify-content:center;"><i class="fas fa-store"></i></span>
+                                        <span>#{boutique.libelle}</span>
+                                    </div>
+                                    <span style="display:none" class="boutique-meta-desc"><h:outputText value="#{boutique.description}"/></span>
+                                    <span style="display:none" class="boutique-meta-etat"><h:outputText value="#{boutique.etat}"/></span>
+                                </td>
+                                <td><h:outputText value="#{boutique.email}"/></td>
+                                <td>
+                                    #{boutique.mobile1 != null ? boutique.mobile1 : '—'}
+                                    <c:if test="#{boutique.mobile2 ne null}"><br/>#{boutique.mobile2}</c:if>
+                                    <c:if test="#{boutique.mobile3 ne null}"><br/>#{boutique.mobile3}</c:if>
+                                </td>
+                                <td><span class="status-badge active">#{boutique.etat}</span></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="openBoutiqueModalFromRow(this, '#{boutique.idboutique}')"><i class="fas fa-edit"></i></button>
+                                        <a href="#{facesContext.externalContext.requestContextPath}/admin/boutiques/#{boutique.idboutique}/delete" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette boutique ?');"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                                <td style="display:none" class="boutique-meta-mobile2"><h:outputText value="#{boutique.mobile2}"/></td>
+                                <td style="display:none" class="boutique-meta-mobile3"><h:outputText value="#{boutique.mobile3}"/></td>
+                                <td style="display:none" class="boutique-meta-tel"><h:outputText value="#{boutique.tel}"/></td>
+                                <td style="display:none" class="boutique-meta-mode"><h:outputText value="#{boutique.modepaielivraison}"/></td>
+                                <td style="display:none" class="boutique-meta-logo"><h:outputText value="#{boutique.logo}"/></td>
+                                <td style="display:none" class="boutique-meta-banniere"><h:outputText value="#{boutique.banniere}"/></td>
+                            </tr>
+                        </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="boutiqueModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="boutiqueModalTitle">Boutique</h3>
+            <button type="button" class="close-btn" onclick="document.getElementById('boutiqueModal').classList.remove('active')">&#215;</button>
+        </div>
+        <form action="#{facesContext.externalContext.requestContextPath}/admin/boutiques/save" method="POST">
+            <input type="hidden" name="idboutique" id="b_id"/>
+            <div class="form-group">
+                <label>Libellé</label>
+                <input type="text" name="libelle" id="b_libelle" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" name="email" id="b_email"/>
+            </div>
+            <div class="form-group">
+                <label>Téléphone</label>
+                <input type="text" name="telephone" id="b_tel"/>
+            </div>
+            <div class="form-group">
+                <label>Téléphone 2</label>
+                <input type="text" name="telephone2" id="b_tel2"/>
+            </div>
+            <div class="form-group">
+                <label>Téléphone 3</label>
+                <input type="text" name="telephone3" id="b_tel3"/>
+            </div>
+            <div class="form-group">
+                <label>Téléphone fixe</label>
+                <input type="text" name="telFixe" id="b_telfixe"/>
+            </div>
+            <div class="form-group">
+                <label>Description / adresse</label>
+                <textarea name="description" id="b_desc" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Mode paiement livraison</label>
+                <input type="text" name="modepaielivraison" id="b_modeliv"/>
+            </div>
+            <div class="form-group">
+                <label>Logo (URL)</label>
+                <input type="text" name="logo" id="b_logo"/>
+            </div>
+            <div class="form-group">
+                <label>Bannière (URL)</label>
+                <input type="text" name="banniere" id="b_banniere"/>
+            </div>
+            <div class="form-group">
+                <label>État</label>
+                <select name="etat" id="b_etat">
+                    <option value="ACTIF">ACTIF</option>
+                    <option value="INACTIF">INACTIF</option>
+                    <option value="SUSPENDU">SUSPENDU</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('boutiqueModal').classList.remove('active')">Annuler</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    //<![CDATA[
+    function openBoutiqueModal(id) {
+        document.getElementById('boutiqueModalTitle').textContent = id ? 'Modifier la boutique' : 'Nouvelle boutique';
+        document.getElementById('b_id').value = id ? id : '';
+        document.getElementById('b_libelle').value = '';
+        document.getElementById('b_email').value = '';
+        document.getElementById('b_tel').value = '';
+        document.getElementById('b_tel2').value = '';
+        document.getElementById('b_tel3').value = '';
+        document.getElementById('b_telfixe').value = '';
+        document.getElementById('b_desc').value = '';
+        document.getElementById('b_modeliv').value = '';
+        document.getElementById('b_logo').value = '';
+        document.getElementById('b_banniere').value = '';
+        document.getElementById('b_etat').value = 'ACTIF';
+        document.getElementById('boutiqueModal').classList.add('active');
+    }
+    function openBoutiqueModalFromRow(btn, id) {
+        var tr = btn.closest('tr');
+        var cells = tr.querySelectorAll('td');
+        var libelle = cells[0].innerText.replace(/\s+/g, ' ').trim();
+        var email = cells[1].innerText.trim();
+        var tel = cells[2].innerText.trim();
+        document.getElementById('boutiqueModalTitle').textContent = 'Modifier la boutique';
+        document.getElementById('b_id').value = id;
+        document.getElementById('b_libelle').value = libelle;
+        document.getElementById('b_email').value = email === '—' ? '' : email;
+        document.getElementById('b_tel').value = tel === '—' ? '' : tel.replace(/\s/g, '');
+        var descEl = tr.querySelector('.boutique-meta-desc');
+        var etEl = tr.querySelector('.boutique-meta-etat');
+        var tel2El = tr.querySelector('.boutique-meta-mobile2');
+        var tel3El = tr.querySelector('.boutique-meta-mobile3');
+        var telFixEl = tr.querySelector('.boutique-meta-tel');
+        var modeEl = tr.querySelector('.boutique-meta-mode');
+        var logoEl = tr.querySelector('.boutique-meta-logo');
+        var banEl = tr.querySelector('.boutique-meta-banniere');
+        document.getElementById('b_desc').value = descEl ? descEl.textContent.trim() : '';
+        document.getElementById('b_tel2').value = tel2El ? tel2El.textContent.trim() : '';
+        document.getElementById('b_tel3').value = tel3El ? tel3El.textContent.trim() : '';
+        document.getElementById('b_telfixe').value = telFixEl ? telFixEl.textContent.trim() : '';
+        document.getElementById('b_modeliv').value = modeEl ? modeEl.textContent.trim() : '';
+        document.getElementById('b_logo').value = logoEl ? logoEl.textContent.trim() : '';
+        document.getElementById('b_banniere').value = banEl ? banEl.textContent.trim() : '';
+        document.getElementById('b_etat').value = etEl ? etEl.textContent.trim() : 'ACTIF';
+        document.getElementById('boutiqueModal').classList.add('active');
+    }
+    //]]>
+</script>
+</body>
+</html>

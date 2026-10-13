@@ -1,0 +1,47 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <c:set var="navKey" value="#{empty adminNav ? 'module-securite' : adminNav}"/>
+    <c:set var="cp" value="#{facesContext.externalContext.requestContextPath}"/>
+    <c:set var="adminUser" value="#{empty currentAdmin ? adminLayoutView.currentAdmin : currentAdmin}"/>
+    <c:set var="adminAvatar" value="#{empty currentAdminAvatarUrl ? adminLayoutView.currentAdminAvatarUrl : currentAdminAvatarUrl}"/>
+
+    <div id="admin-sidebar-overlay" class="admin-sidebar-overlay" aria-hidden="true"></div>
+    <aside id="admin-sidebar" class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <a href="#{cp}/admin/module/securite" class="admin-sidebar-brand">
+                <i class="fas fa-car"></i> AutoPieces Pro
+            </a>
+            <c:if test="#{not empty adminUser}">
+                <a href="#{cp}/admin/module/parametres?tab=profil" class="admin-sidebar-profile">
+                    <img src="#{adminAvatar}" alt="" class="admin-sidebar-avatar"/>
+                    <span>
+                        <span class="admin-sidebar-name">#{adminUser.prenom} #{adminUser.nom}</span>
+                        <span class="admin-sidebar-role">#{adminUser.role}</span>
+                    </span>
+                </a>
+            </c:if>
+        </div>
+        <div class="admin-sidebar-content">
+            <nav class="admin-nav" aria-label="Modules administration">
+                <span class="admin-nav-section">Modules</span>
+                <a href="#{cp}/admin/module/securite" class="admin-nav-item #{navKey eq 'module-securite' ? 'active' : ''}" style="--nav-accent:#e74c3c;">
+                    <span class="admin-nav-icon"><i class="fas fa-shield-alt"></i></span> Dashboard Sécurité
+                </a>
+                <a href="#{cp}/admin/module/pieces" class="admin-nav-item #{navKey eq 'module-pieces' ? 'active' : ''}" style="--nav-accent:#3498db;">
+                    <span class="admin-nav-icon"><i class="fas fa-cog"></i></span> Dashboard Pièces
+                </a>
+                <a href="#{cp}/admin/module/boutique" class="admin-nav-item #{navKey eq 'module-boutique' ? 'active' : ''}" style="--nav-accent:#27ae60;">
+                    <span class="admin-nav-icon"><i class="fas fa-store"></i></span> Dashboard Boutique
+                </a>
+                <a href="#{cp}/admin/module/parametres" class="admin-nav-item #{navKey eq 'module-parametres' ? 'active' : ''}" style="--nav-accent:#9b59b6;">
+                    <span class="admin-nav-icon"><i class="fas fa-sliders-h"></i></span> Dashboard Paramètres
+                </a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <a href="#{cp}/" class="admin-nav-item" target="_blank" rel="noopener" style="--nav-accent:#f39c12;"><span class="admin-nav-icon"><i class="fas fa-external-link-alt"></i></span> Voir le site</a>
+                <a href="#{cp}/logout" class="admin-nav-item logout" style="--nav-accent:#e74c3c;"><span class="admin-nav-icon"><i class="fas fa-sign-out-alt"></i></span> #{msg['admin.nav.logout']}</a>
+            </div>
+        </div>
+   </aside>
+</ui:composition>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+    <meta charset="UTF-8" />
+    <title>Catalogue - AutoPieces Pro</title>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/marketplace-theme.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/vendor/fontawesome/css/all.min.css" />
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="#{facesContext.externalContext.requestContextPath}/">
+                    <img src="#{facesContext.externalContext.requestContextPath}/images/logo-officiel.png" alt="Logo" />
+                </a>
+                <span class="sidebar-brand">Client</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#{facesContext.externalContext.requestContextPath}/client/dashboard" class="nav-item">
+                    <i class="fas fa-home"></i> Tableau de bord
+                </a>
+                <a href="#{facesContext.externalContext.requestContextPath}/client/catalogue" class="nav-item active">
+                    <i class="fas fa-th-large"></i> Catalogue
+                </a>
+                <a href="#{facesContext.externalContext.requestContextPath}/client/panier" class="nav-item">
+                    <i class="fas fa-shopping-cart"></i> Panier
+                </a>
+                <a href="#{facesContext.externalContext.requestContextPath}/client/commandes" class="nav-item">
+                    <i class="fas fa-box"></i> Mes Commandes
+                </a>
+                <a href="#{facesContext.externalContext.requestContextPath}/client/compte" class="nav-item">
+                    <i class="fas fa-user"></i> Mon compte
+                </a>
+                <a href="#{facesContext.externalContext.requestContextPath}/logout" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Catalogue de Pièces</h1>
+                <div class="top-bar-actions">
+                    <span class="date-display">#{currentDate}</span>
+                </div>
+            </header>
+            <div class="dashboard-content">
+                <div class="pieces-grid">
+                    <c:forEach var="piece" items="#{pieces}">
+                        <div class="piece-card">
+                            <div class="piece-image">
+                                <span class="piece-badge">En Stock</span>
+                            </div>
+                            <div class="piece-info">
+                                <h3>#{piece.libelle}</h3>
+                                <p class="piece-desc">#{piece.description}</p>
+                                <div class="piece-meta">
+                                    <span class="piece-price">#{piece.prix} DA</span>
+                                </div>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-cart-plus"></i> Ajouter au Panier
+                                </button>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/marketplace.js"></script>
+</body>
+</html>

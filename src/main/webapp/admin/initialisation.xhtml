@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<head>
+    <ui:include src="/WEB-INF/fragments/adminHead.xhtml"/>
+    <style>
+        .init-container { max-width: 1200px; }
+        .section-card .data-table th { background: #2c3e50; color: white; padding: 1rem; text-align: left; font-weight: 600; }
+        .section-card .data-table td { padding: 1rem; border-bottom: 1px solid #ecf0f1; }
+        .section-card .data-table tr:hover { background: #f8f9fa; }
+        .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .alert-success { background: rgba(39, 174, 96, 0.1); border: 1px solid #27ae60; color: #27ae60; }
+        .alert-error { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; }
+        .alert-info { background: rgba(44, 62, 80, 0.1); border: 1px solid #2c3e50; color: #2c3e50; }
+        .badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .badge-success { background: rgba(39, 174, 96, 0.15); color: #27ae60; }
+        .btn-success { background: #2c3e50; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-success:hover { background: #34495e; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3); }
+        .btn-warning { background: #f39c12; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-warning:hover { background: #e67e22; transform: translateY(-2px); }
+        .btn-danger { background: #e74c3c; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-danger:hover { background: #c0392b; transform: translateY(-2px); }
+        .btn-primary { background: #2c3e50; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-primary:hover { background: #34495e; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3); }
+        .btn-secondary { background: #95a5a6; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-secondary:hover { background: #7f8c8d; }
+    </style>
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <ui:include src="/WEB-INF/fragments/adminSidebar.xhtml"><ui:param name="adminNav" value="initialisation"/></ui:include>
+    <div class="admin-main">
+        <ui:include src="/WEB-INF/fragments/adminTopbar.xhtml"/>
+        <div class="admin-content">
+            <div class="init-container">
+                <!-- Alert Messages -->
+                <c:if test="#{success ne null}">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> #{success}
+                    </div>
+                </c:if>
+                <c:if test="#{error ne null}">
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i> #{error}
+                    </div>
+                </c:if>
+
+                <!-- Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h3>#{stats.annees != null ? stats.annees : 0}</h3>
+                        <p>Années configurées</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-week"></i>
+                        <h3>#{stats.mois != null ? stats.mois : 0}</h3>
+                        <p>Mois configurés</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-day"></i>
+                        <h3>#{stats.jours != null ? stats.jours : 0}</h3>
+                        <p>Jours configurés</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-store"></i>
+                        <h3>#{stats.boutiques != null ? stats.boutiques : 0}</h3>
+                        <p>Boutiques actives</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-tags"></i>
+                        <h3>#{stats.categories != null ? stats.categories : 0}</h3>
+                        <p>Catégories de pièces</p>
+                    </div>
+                </div>
+
+                <!-- Configuration des années et mois -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Configuration des Périodes</h2>
+                        <button class="btn btn-success" onclick="openModal('periodeModal')">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                    <div class="section-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Nom</th>
+                                        <th>Code</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="annee" items="#{annees}">
+                                        <tr>
+                                            <td><i class="fas fa-calendar" style="margin-right: 0.5rem;"></i> Année</td>
+                                            <td>#{annee.nom}</td>
+                                            <td>#{annee.code}</td>
+                                            <td><span class="badge badge-success">Actif</span></td>
+                                            <td class="actions">
+                                                <a class="btn btn-danger" style="padding: 0.4rem 0.8rem;"
+                                                   href="#{facesContext.externalContext.requestContextPath}/admin/initialisation/periode/#{annee.idperiode}/delete"
+                                                   onclick="return confirm('Supprimer cette période ?');"><i class="fas fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    <c:forEach var="mois" items="#{mois}">
+                                        <tr>
+                                            <td><i class="fas fa-calendar-week" style="margin-right: 0.5rem;"></i> Mois</td>
+                                            <td>#{mois.nom}</td>
+                                            <td>#{mois.code}</td>
+                                            <td><span class="badge badge-success">Actif</span></td>
+                                            <td class="actions">
+                                                <a class="btn btn-danger" style="padding: 0.4rem 0.8rem;"
+                                                   href="#{facesContext.externalContext.requestContextPath}/admin/initialisation/periode/#{mois.idperiode}/delete"
+                                                   onclick="return confirm('Supprimer cette période ?');"><i class="fas fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    <c:forEach var="jour" items="#{jours}">
+                                        <tr>
+                                            <td><i class="fas fa-calendar-day" style="margin-right: 0.5rem;"></i> Jour</td>
+                                            <td>#{jour.nom}</td>
+                                            <td>#{jour.code}</td>
+                                            <td><span class="badge badge-success">Actif</span></td>
+                                            <td class="actions">
+                                                <a class="btn btn-danger" style="padding: 0.4rem 0.8rem;"
+                                                   href="#{facesContext.externalContext.requestContextPath}/admin/initialisation/periode/#{jour.idperiode}/delete"
+                                                   onclick="return confirm('Supprimer cette période ?');"><i class="fas fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestion des boutiques -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-store"></i> Gestion des Boutiques</h2>
+                        <button class="btn btn-success" onclick="openModal('boutiqueModal')">
+                            <i class="fas fa-plus"></i> Ajouter Boutique
+                        </button>
+                    </div>
+                    <div class="section-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Propriétaire</th>
+                                        <th>Ville</th>
+                                        <th>Téléphone</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="boutique" items="#{boutiques}">
+                                        <tr>
+                                            <td><i class="fas fa-store" style="margin-right: 0.5rem; color: #2c3e50;"></i>#{boutique.libelle}</td>
+                                            <td><small style="color:#7f8c8d;"><h:outputText value="#{boutique.description}"/></small></td>
+                                            <td>—</td>
+                                            <td>#{boutique.mobile1 != null ? boutique.mobile1 : '—'}</td>
+                                            <td><span class="badge badge-success">Active</span></td>
+                                            <td class="actions">
+                                                <button class="btn btn-warning" style="padding: 0.4rem 0.8rem;"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-danger" style="padding: 0.4rem 0.8rem;"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestion des catégories -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-tags"></i> Gestion des Catégories</h2>
+                        <button class="btn btn-success" onclick="openModal('categorieModal')">
+                            <i class="fas fa-plus"></i> Ajouter Catégorie
+                        </button>
+                    </div>
+                    <div class="section-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Description</th>
+                                        <th>Nombre de pièces</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="categorie" items="#{categories}">
+                                        <tr>
+                                            <td><i class="fas fa-tag" style="margin-right: 0.5rem; color: #2c3e50;"></i>#{categorie.libelle}</td>
+                                            <td><h:outputText value="#{categorie.ref}"/></td>
+                                            <td>#{categorie.nombre != null ? categorie.nombre : 0}</td>
+                                            <td class="actions">
+                                                <button class="btn btn-warning" style="padding: 0.4rem 0.8rem;"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-danger" style="padding: 0.4rem 0.8rem;"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Initialisation des données -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-database"></i> Initialisation des Données</h2>
+                    </div>
+                    <div class="section-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Cette section permet d'initialiser les données de base de la plateforme.
+                        </div>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <form action="#{facesContext.externalContext.requestContextPath}/admin/initialisation/seed" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-seedling"></i> Données de démonstration
+                                </button>
+                            </form>
+                            <form action="#{facesContext.externalContext.requestContextPath}/admin/initialisation/reset" method="POST" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir réinitialiser toutes les données ?');">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-redo"></i> Réinitialiser la base
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Modal Ajout Période -->
+    <div id="periodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-alt" style="margin-right: 0.5rem;"></i>Ajouter une Période</h3>
+                <button class="modal-close" onclick="closeModal('periodeModal')">&#215;</button>
+            </div>
+            <form action="#{facesContext.externalContext.requestContextPath}/admin/initialisation/periode" method="POST">
+                <div class="form-group">
+                    <label><i class="fas fa-list"></i> Type</label>
+                    <select name="type" required="required">
+                        <option value="">Sélectionnez</option>
+                        <option value="ANNEE">Année</option>
+                        <option value="MOIS">Mois</option>
+                        <option value="JOUR">Jour</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Nom</label>
+                    <input type="text" name="nom" placeholder="Ex: 2026 ou Janvier" required="required"/>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-code"></i> Code</label>
+                    <input type="text" name="code" placeholder="Code unique" required="required"/>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-sort-numeric-up"></i> Ordre</label>
+                    <input type="number" name="ordre" placeholder="Ex: 1..12 (optionnel)"/>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('periodeModal')">Annuler</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ajout Boutique -->
+    <div id="boutiqueModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-store" style="margin-right: 0.5rem;"></i>Ajouter une Boutique</h3>
+                <button class="modal-close" onclick="closeModal('boutiqueModal')">&#215;</button>
+            </div>
+            <form action="#{facesContext.externalContext.requestContextPath}/admin/initialisation/boutique" method="POST">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-store"></i> Nom</label>
+                        <input type="text" name="nom" required="required"/>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Propriétaire</label>
+                        <input type="text" name="proprietaire" required="required"/>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Ville</label>
+                        <input type="text" name="ville" required="required"/>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Téléphone</label>
+                        <input type="tel" name="telephone" required="required"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-info-circle"></i> Adresse</label>
+                    <textarea name="adresse" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('boutiqueModal')">Annuler</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ajout Catégorie -->
+    <div id="categorieModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-tags" style="margin-right: 0.5rem;"></i>Ajouter une Catégorie</h3>
+                <button class="modal-close" onclick="closeModal('categorieModal')">&#215;</button>
+            </div>
+            <form action="#{facesContext.externalContext.requestContextPath}/admin/initialisation/categorie" method="POST">
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Nom</label>
+                    <input type="text" name="nom" required="required"/>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-info-circle"></i> Description</label>
+                    <textarea name="description" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('categorieModal')">Annuler</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        //<![CDATA[
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Fermer modal en cliquant à l'extérieur
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+        //]]>
+    </script>
+</body>
+</html>

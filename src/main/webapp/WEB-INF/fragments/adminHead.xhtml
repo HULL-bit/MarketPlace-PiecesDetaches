@@ -1,0 +1,47 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>#{empty adminPageTitle ? msg['admin.nav.dashboard'] : adminPageTitle} — AutoPieces Pro</title>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/admin-layout.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/admin-module.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/mpd-public-theme.css"/>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-branding.js"></script>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/template/poseidon-layout/css/primeflex.min.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/vendor/fontawesome/css/all.min.css"/>
+    <script>
+        //<![CDATA[
+        (function () {
+            try {
+                var t = localStorage.getItem('mpd_ui_theme') || 'dark';
+                if (t !== 'light' && t !== 'dark') { t = 'dark'; }
+                document.documentElement.setAttribute('data-mpd-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-mpd-theme', 'dark'); }
+        })();
+        //]]>
+    </script>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-theme.js"></script>
+    <script>
+        //<![CDATA[
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.MpdTheme) { MpdTheme.init(); }
+            var toggle = document.getElementById('admin-sidebar-toggle');
+            var sidebar = document.getElementById('admin-sidebar');
+            var overlay = document.getElementById('admin-sidebar-overlay');
+            if (toggle && sidebar) {
+                toggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('open');
+                    if (overlay) { overlay.classList.toggle('show'); }
+                });
+            }
+            if (overlay) {
+                overlay.addEventListener('click', function () {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                });
+            }
+        });
+        //]]>
+    </script>
+</ui:composition>

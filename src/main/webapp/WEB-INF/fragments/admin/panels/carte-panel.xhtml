@@ -1,0 +1,236 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+
+            <!-- Statistics -->
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <i class="fas fa-store"></i>
+                    <h3>#{boutiques != null ? boutiques.size() : 0}</h3>
+                    <p>Boutiques actives</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>Dakar</h3>
+                    <p>Zone principale</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-map"></i>
+                    <h3>Sénégal</h3>
+                    <p>Couverture</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>100%</h3>
+                    <p>En ligne</p>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div class="map-container">
+                <div class="map-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Rechercher une boutique..." onkeyup="filterBoutiques()"/>
+                    </div>
+                    <button class="filter-btn active" onclick="filterByStatus('all', this)">
+                        <i class="fas fa-list"></i> Toutes
+                    </button>
+                    <button class="filter-btn" onclick="filterByStatus('active', this)">
+                        <i class="fas fa-check"></i> Actives
+                    </button>
+                    <button class="filter-btn" onclick="resetMap()">
+                        <i class="fas fa-redo"></i> Réinitialiser
+                    </button>
+                </div>
+                <div id="map"></div>
+            </div>
+<script type="application/json" id="boutiquesData">
+    <c:choose>
+        <c:when test="#{not empty boutiques}">
+    [
+        <c:forEach var="boutique" items="#{boutiques}" varStatus="loop">
+        {
+            "id": #{boutique.idboutique != null ? boutique.idboutique : loop.index},
+            "nom": "#{boutique.libelle != null ? boutique.libelle : 'Boutique '}",
+            "adresse": "Dakar, Sénégal",
+            "telephone": "#{boutique.mobile1 != null ? boutique.mobile1 : ''}",
+            "latitude": #{boutique.latitude != null ? boutique.latitude : (14.6937 + (loop.index % 5) * 0.01)},
+            "longitude": #{boutique.longitude != null ? boutique.longitude : (-17.4467 + (loop.index % 3) * 0.01)},
+            "status": "active"
+        }<c:if test="#{not loop.last}">,</c:if>
+        </c:forEach>
+    ]
+        </c:when>
+        <c:otherwise>
+    []
+        </c:otherwise>
+    </c:choose>
+    </script>
+
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/vendor/leaflet/leaflet.css" />
+    <script src="#{facesContext.externalContext.requestContextPath}/resources/vendor/leaflet/leaflet.js"></script>
+    <script>
+        //<![CDATA[
+        (function () {
+            var map, markerGroup, boutiquesData;
+            var markers = [];
+            var mapInitialized = false;
+
+            function createCustomIcon() {
+                return L.divIcon({
+                    className: 'custom-marker',
+                    html: '<i class="fas fa-store"></i>',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20],
+                    popupAnchor: [0, -20]
+                });
+            }
+
+            function addMarkers(data) {
+                markerGroup.clearLayers();
+                markers = [];
+
+                data.forEach(function(boutique) {
+                    var marker = L.marker([boutique.latitude, boutique.longitude], {
+                        icon: createCustomIcon()
+                    }).addTo(markerGroup);
+
+                    var popupContent = '<div class="boutique-popup">' +
+                        '<div class="popup-header">' +
+                            '<i class="fas fa-store"></i>' +
+                            '<h3>' + boutique.nom + '</h3>' +
+                        '</div>' +
+                        '<div class="popup-body">' +
+                            '<div class="popup-info">' +
+                                '<i class="fas fa-map-marker-alt"></i>' +
+                                '<span>' + boutique.adresse + '</span>' +
+                            '</div>' +
+                            '<div class="popup-info">' +
+                                '<i class="fas fa-phone"></i>' +
+                                '<span>' + boutique.telephone + '</span>' +
+                            '</div>' +
+                            '<div class="popup-info">' +
+                                '<i class="fas fa-circle"></i>' +
+                                '<span class="popup-status active">Active</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="popup-actions">' +
+                            '<a href="#{facesContext.externalContext.requestContextPath}/admin/module/boutique?tab=boutiques" class="popup-btn popup-btn-primary">' +
+                                '<i class="fas fa-store"></i> Gérer cette boutique' +
+                            '</a>' +
+                        '</div>' +
+                    '</div>';
+
+                    marker.bindPopup(popupContent);
+                    markers.push(marker);
+                });
+
+                if (markers.length > 0) {
+                    map.fitBounds(markerGroup.getBounds(), { padding: [50, 50] });
+                }
+            }
+
+            window.filterBoutiques = function () {
+                var searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                var filtered = boutiquesData.filter(function(b) {
+                    return b.nom.toLowerCase().includes(searchTerm) ||
+                           b.adresse.toLowerCase().includes(searchTerm);
+                });
+                addMarkers(filtered);
+            };
+
+            window.filterByStatus = function (status, btn) {
+                document.querySelectorAll('.filter-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+
+                if (status === 'all') {
+                    addMarkers(boutiquesData);
+                } else {
+                    var filtered = boutiquesData.filter(function(b) {
+                        return b.status === status;
+                    });
+                    addMarkers(filtered);
+                }
+            };
+
+            window.resetMap = function () {
+                document.getElementById('searchInput').value = '';
+                document.querySelectorAll('.filter-btn').forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                document.querySelector('.filter-btn').classList.add('active');
+                addMarkers(boutiquesData);
+                map.setView([14.6937, -17.4467], 13);
+            };
+
+            // Leaflet mesure la taille de son conteneur à l'initialisation : si l'onglet
+            // "Carte" n'est pas l'onglet actif (display:none), la carte se casse et reste
+            // invisible même après un changement d'onglet. On n'initialise donc la carte
+            // que lorsque son panneau devient réellement visible, et on invalide la taille
+            // à chaque fois qu'il le redevient.
+            function initCarteMap() {
+                if (mapInitialized) {
+                    map.invalidateSize();
+                    return;
+                }
+                mapInitialized = true;
+
+                map = L.map('map').setView([14.6937, -17.4467], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+
+                boutiquesData = JSON.parse(document.getElementById('boutiquesData').textContent);
+                markerGroup = L.featureGroup().addTo(map);
+                addMarkers(boutiquesData);
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        L.marker([position.coords.latitude, position.coords.longitude], {
+                            icon: L.divIcon({
+                                className: 'custom-marker',
+                                html: '<i class="fas fa-user"></i>',
+                                iconSize: [40, 40],
+                                iconAnchor: [20, 20]
+                            })
+                        }).addTo(map).bindPopup('<b>Votre position</b>');
+                    });
+                }
+            }
+
+            function watchCartePanel() {
+                var panel = document.querySelector('.module-panel[data-panel="carte"]');
+                if (!panel) {
+                    // Panneau non hébergé dans un hub à onglets : init directe.
+                    initCarteMap();
+                    return;
+                }
+                if (panel.classList.contains('active')) {
+                    initCarteMap();
+                }
+                new MutationObserver(function () {
+                    if (panel.classList.contains('active')) {
+                        initCarteMap();
+                    }
+                }).observe(panel, {attributes: true, attributeFilter: ['class']});
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', watchCartePanel);
+            } else {
+                watchCartePanel();
+            }
+        })();
+        //]]>
+    </script>
+
+</ui:composition>

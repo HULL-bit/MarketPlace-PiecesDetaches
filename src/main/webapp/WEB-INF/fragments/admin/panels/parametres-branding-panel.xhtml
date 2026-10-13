@@ -1,0 +1,182 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h3 class="admin-card-title"><i class="fas fa-palette"></i> Personnalisation de la plateforme</h3>
+        </div>
+        <div class="admin-card-body">
+            <p class="brand-intro">
+                Choisissez un th&#232;me ou personnalisez chaque &#233;l&#233;ment. Les modifications sont appliqu&#233;es en temps r&#233;el et sauvegard&#233;es dans ce navigateur.
+            </p>
+            <div id="brand-saved-msg" class="admin-alert success" style="display:none; margin-bottom:1rem;">
+                <i class="fas fa-check-circle"></i> Couleurs enregistr&#233;es pour cette session navigateur.
+            </div>
+
+            <!-- ===== PRESETS ===== -->
+            <h4 class="brand-section-title"><i class="fas fa-swatchbook"></i> Th&#232;mes pr&#233;d&#233;finis</h4>
+            <div class="brand-presets">
+                <div class="brand-preset" data-preset="electric" title="D&#233;faut">
+                    <div class="brand-preset-swatch"><span style="background:#ffffff"></span><span style="background:#0d47a1"></span></div>
+                    <strong>&#201;lectrique</strong>
+                </div>
+                <div class="brand-preset" data-preset="ocean">
+                    <div class="brand-preset-swatch"><span style="background:#f0fafa"></span><span style="background:#006064"></span></div>
+                    <strong>Oc&#233;an</strong>
+                </div>
+                <div class="brand-preset" data-preset="forest">
+                    <div class="brand-preset-swatch"><span style="background:#f1f8e9"></span><span style="background:#1b5e20"></span></div>
+                    <strong>For&#234;t</strong>
+                </div>
+                <div class="brand-preset" data-preset="violet">
+                    <div class="brand-preset-swatch"><span style="background:#f3e5f5"></span><span style="background:#4527a0"></span></div>
+                    <strong>Violet</strong>
+                </div>
+                <div class="brand-preset" data-preset="sunset">
+                    <div class="brand-preset-swatch"><span style="background:#fff8e1"></span><span style="background:#e65100"></span></div>
+                    <strong>Sunset</strong>
+                </div>
+                <div class="brand-preset" data-preset="slate">
+                    <div class="brand-preset-swatch"><span style="background:#eceff1"></span><span style="background:#37474f"></span></div>
+                    <strong>Ardoise</strong>
+                </div>
+            </div>
+
+            <!-- ===== LIVE PREVIEW ===== -->
+            <h4 class="brand-section-title"><i class="fas fa-eye"></i> Aper&#231;u en direct</h4>
+            <div class="brand-preview-card" id="brand-preview">
+                <div class="bp-header">
+                    <div class="bp-logo"><i class="fas fa-car"></i></div>
+                    <div class="bp-title">AutoPieces Pro</div>
+                </div>
+                <div class="bp-body">
+                    <div class="bp-row">
+                        <span class="bp-badge">Admin</span>
+                        <span class="bp-label">Tableau de bord</span>
+                    </div>
+                    <div class="bp-row bp-muted">Texte secondaire / muted</div>
+                    <div class="bp-row">
+                        <span class="bp-btn">Bouton</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== FORM ===== -->
+            <form id="mpd-branding-form">
+                <!-- Section: Couleurs globales -->
+                <h4 class="brand-section-title"><i class="fas fa-fill-drip"></i> Couleurs globales</h4>
+                <div class="brand-custom-row">
+                    <div class="form-group">
+                        <label>Couleur principale (sidebar, boutons)</label>
+                        <input type="color" id="brand_primary" value="#0d47a1"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Couleur d&#39;accent</label>
+                        <input type="color" id="brand_accent" value="#1565c0"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Fond cartes / surface</label>
+                        <input type="color" id="brand_surface" value="#ffffff"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Couleur du texte</label>
+                        <input type="color" id="brand_text" value="#2c3e50"/>
+                    </div>
+                </div>
+                <div class="brand-custom-row">
+                    <div class="form-group">
+                        <label>Texte secondaire (muted)</label>
+                        <input type="color" id="brand_muted" value="#7f8c8d"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Couleur des bordures</label>
+                        <input type="color" id="brand_border" value="#bdc3c7"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Rayon des coins (px)</label>
+                        <input type="range" id="brand_radius" min="0" max="24" value="10" style="width:100%;"/>
+                    </div>
+                </div>
+
+                <!-- Section: Sidebar -->
+                <h4 class="brand-section-title"><i class="fas fa-bars"></i> Sidebar</h4>
+                <div class="brand-custom-row">
+                    <div class="form-group">
+                        <label>Couleur du texte dans la sidebar</label>
+                        <input type="color" id="brand_sidebar_text" value="#ecf0f1"/>
+                    </div>
+                </div>
+
+                <!-- Section: Navbar & Public site -->
+                <h4 class="brand-section-title"><i class="fas fa-globe"></i> Navbar &amp; Site public</h4>
+                <div class="brand-custom-row">
+                    <div class="form-group">
+                        <label>Couleur du texte navbar</label>
+                        <input type="color" id="brand_navbar_text" value="#ffffff"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Fond cartes (site public)</label>
+                        <input type="color" id="brand_card_bg" value="#242424"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Texte clair (site public)</label>
+                        <input type="color" id="brand_text_light" value="#f5f5f5"/>
+                    </div>
+                </div>
+
+                <!-- Section: Typographie -->
+                <h4 class="brand-section-title"><i class="fas fa-font"></i> Typographie</h4>
+                <div class="brand-custom-row">
+                    <div class="form-group">
+                        <label>Police de caract&#232;res</label>
+                        <select id="brand_font" style="width:100%; padding:0.6rem;">
+                            <option value="Segoe UI">Segoe UI (par d&#233;faut)</option>
+                            <option value="Roboto">Roboto</option>
+                            <option value="Inter">Inter</option>
+                            <option value="Open Sans">Open Sans</option>
+                            <option value="Lato">Lato</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Taille de base: <strong id="brand_fontsize_label">16px</strong></label>
+                        <input type="range" id="brand_fontsize" min="12" max="20" value="16" style="width:100%;"/>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Appliquer sur toute la plateforme</button>
+                    <button type="button" class="btn btn-light" id="brand-reset-btn"><i class="fas fa-undo"></i> R&#233;initialiser</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        //<![CDATA[
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.MpdBranding) { MpdBranding.initAdminForm(); }
+            var reset = document.getElementById('brand-reset-btn');
+            if (reset) {
+                reset.addEventListener('click', function () {
+                    localStorage.removeItem('mpd_brand_preset');
+                    localStorage.removeItem('mpd_brand_primary');
+                    localStorage.removeItem('mpd_brand_accent');
+                    localStorage.removeItem('mpd_brand_surface');
+                    localStorage.removeItem('mpd_brand_radius');
+                    localStorage.removeItem('mpd_brand_text');
+                    localStorage.removeItem('mpd_brand_muted');
+                    localStorage.removeItem('mpd_brand_border');
+                    localStorage.removeItem('mpd_brand_sidebar_text');
+                    localStorage.removeItem('mpd_brand_navbar_text');
+                    localStorage.removeItem('mpd_brand_card_bg');
+                    localStorage.removeItem('mpd_brand_text_light');
+                    localStorage.removeItem('mpd_brand_font');
+                    localStorage.removeItem('mpd_brand_fontsize');
+                    MpdBranding.savePreset('electric');
+                });
+            }
+        });
+        //]]>
+    </script>
+</ui:composition>

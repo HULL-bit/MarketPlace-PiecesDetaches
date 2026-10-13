@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoPieces Pro - Marketplace Pièces Détachées</title>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/marketplace-theme.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/template/poseidon-layout/css/primeflex.min.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/mpd-public-theme.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/vendor/fontawesome/css/all.min.css" />
+    <script>
+        //<![CDATA[
+        (function () {
+            try {
+                var t = localStorage.getItem('mpd_ui_theme') || 'dark';
+                if (t !== 'light' && t !== 'dark') { t = 'dark'; }
+                document.documentElement.setAttribute('data-mpd-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-mpd-theme', 'dark'); }
+        })();
+        //]]>
+    </script>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-branding.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .cart-nav-link { position: relative; }
+        .cart-badge {
+            position: absolute; top: -6px; right: -8px;
+            background: #e74c3c; color: #fff; font-size: 0.7rem;
+            min-width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+    </style>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ecf0f1; color: #2c3e50; line-height: 1.6; }
+        .hero-section { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%); margin-top: 70px; }
+        .hero-title { font-size: 3.5rem; font-weight: 700; margin-bottom: 1.5rem; line-height: 1.2; color: #2c3e50; }
+        .hero-subtitle { font-size: 1.3rem; margin-bottom: 2.5rem; color: #7f8c8d; }
+        .section { padding: 5rem 2rem; }
+        .section-title { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; color: #2c3e50; }
+        .section-subtitle { font-size: 1.2rem; color: #7f8c8d; margin-bottom: 3rem; }
+        .navbar, .mpd-navbar { background: #2c3e50 !important; padding: 0.8rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 10px; left: 5px; right: 5px; width: calc(100% - 10px); z-index: 1000; transition: background 0.25s, box-shadow 0.25s; border-radius: 50px; }
+        .navbar-container { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
+        .navbar-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: #ecf0f1; font-size: 1.2rem; font-weight: 700; }
+        .navbar-brand img { height: 35px; width: auto; border-radius: 50%; }
+        .navbar-nav { display: flex; list-style: none; gap: 0.3rem; }
+        .nav-link { color: #ecf0f1; text-decoration: none; font-weight: 600; transition: all 0.3s; padding: 0.6rem 1.2rem; border-radius: 8px; position: relative; font-size: 1rem; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: #ffffff; transform: translateY(-2px); }
+        .nav-link::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 0; height: 2px; background: #ecf0f1; transition: width 0.3s; }
+        .nav-link:hover::after { width: 60%; }
+        .navbar-actions { display: flex; gap: 0.5rem; align-items: center; }
+        .btn { padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.3s; cursor: pointer; border: none; font-size: 0.85rem; }
+        .btn-navbar { background: transparent; color: #ecf0f1; border: 2px solid #bdc3c7; font-size: 0.85rem; padding: 0.5rem 1rem; }
+        .btn-navbar:hover { border-color: #ecf0f1; color: #ecf0f1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+        .btn-magasin { background: transparent; color: #ecf0f1; border: 2px solid #bdc3c7; font-size: 0.85rem; padding: 0.5rem 1rem; }
+        .btn-magasin:hover { border-color: #ecf0f1; color: #ecf0f1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+        .btn-lang { background: transparent; color: #ecf0f1; border: 2px solid #3498db; font-size: 0.75rem; padding: 0.35rem 0.7rem; }
+        .btn-lang:hover { background: transparent; color: #ecf0f1; border-color: #ecf0f1; transform: translateY(-2px); }
+        .btn-primary { background: #2c3e50; color: white; }
+        .btn-primary:hover { background: #34495e; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3); }
+        .btn-secondary { background: transparent; color: #ecf0f1; border: 2px solid #bdc3c7; }
+        .btn-secondary:hover { border-color: #95a5a6; color: #95a5a6; }
+        .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; margin-top: 4rem; }
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 2.5rem; font-weight: 700; color: #2c3e50; display: block; }
+        .stat-label { font-size: 1rem; color: #7f8c8d; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1400px; margin: 0 auto; }
+        .card { background: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #bdc3c7; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 16px 32px rgba(44,62,80,0.18); }
+        .card-img { height: 200px; background: linear-gradient(135deg, #2c3e50, #34495e); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .card:hover .card-img img { transform: scale(1.1); }
+        .card-badge { position: absolute; top: 1rem; right: 1rem; background: #27ae60; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 3px 10px rgba(39,174,96,0.4); }
+        .card-tag { display: inline-block; background: #ecf0f1; color: #2c3e50; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.65rem; border-radius: 20px; margin-bottom: 0.6rem; }
+        .card-body { padding: 1.5rem; }
+        .card-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.75rem; color: #2c3e50; }
+        .card-text { color: #7f8c8d; line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .feature-card { background: #ffffff; padding: 2.5rem; border-radius: 12px; border: 1px solid #bdc3c7; text-align: center; transition: all 0.3s; }
+        .feature-card:hover { border-color: #2c3e50; transform: translateY(-5px); }
+        .feature-icon { width: 70px; height: 70px; background: #2c3e50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 1.8rem; color: white; }
+        .feature-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 1rem; color: #2c3e50; }
+        .feature-text { color: #7f8c8d; line-height: 1.6; }
+        .footer { background: #2c3e50; padding: 3rem 2rem; border-top: 1px solid #bdc3c7; margin-top: 4rem; }
+        .footer-container { max-width: 1400px; margin: 0 auto; }
+        .footer-copyright { text-align: center; color: #ecf0f1; }
+        .carousel-section { position: relative; overflow: hidden; }
+        .carousel { position: relative; overflow: hidden; border-radius: 12px; }
+        .carousel-track { display: flex; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .carousel-slide { min-width: 100%; flex-shrink: 0; position: relative; }
+        .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(44, 62, 80, 0.9); color: white; border: none; padding: 1rem 1.2rem; cursor: pointer; font-size: 1.3rem; border-radius: 50%; z-index: 10; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .carousel-btn:hover { background: #2c3e50; transform: translateY(-50%) scale(1.1); }
+        .carousel-btn.prev { left: 1rem; }
+        .carousel-btn.next { right: 1rem; }
+        .carousel-dots { display: flex; justify-content: center; gap: 0.8rem; margin-top: 1.5rem; }
+        .carousel-dot { width: 12px; height: 12px; border-radius: 50%; background: #bdc3c7; border: none; cursor: pointer; transition: all 0.3s; }
+        .carousel-dot.active { background: #2c3e50; transform: scale(1.3); }
+        .btn-lg { padding: 1rem 2rem; font-size: 1.1rem; }
+        .btn-glass { background: rgba(255,255,255,0.1); color: white; border: 2px solid rgba(255,255,255,0.3); }
+        .btn-glass:hover { background: rgba(255,255,255,0.2); border-color: white; }
+        .hero-actions { display: flex; gap: 1.5rem; justify-content: center; }
+        .search-section { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 4rem 2rem; }
+        .search-container { max-width: 1200px; margin: 0 auto; }
+        .search-box { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .search-title { font-size: 2rem; font-weight: 700; color: #2c3e50; margin-bottom: 2rem; text-align: center; }
+        .search-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .search-input { padding: 1rem; border: 2px solid #bdc3c7; border-radius: 8px; font-size: 1.1rem; transition: all 0.3s; }
+        .search-input:focus { border-color: #2c3e50; outline: none; box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1); }
+        .search-select { padding: 1rem; border: 2px solid #bdc3c7; border-radius: 8px; font-size: 1.1rem; background: white; cursor: pointer; transition: all 0.3s; }
+        .search-select:focus { border-color: #2c3e50; outline: none; box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1); }
+        .search-btn { width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #2c3e50, #34495e); color: white; border: none; border-radius: 8px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .search-btn:hover { background: linear-gradient(135deg, #34495e, #3d566e); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3); }
+        .category-tags { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; justify-content: center; }
+        .category-tag { padding: 0.8rem 1.5rem; background: #ecf0f1; border-radius: 25px; cursor: pointer; transition: all 0.3s; font-size: 1rem; font-weight: 500; }
+        .category-tag:hover { background: #2c3e50; color: white; transform: translateY(-2px); }
+        .hero-map-section { padding: 4rem 2rem; background: #ecf0f1; }
+        .hero-map-container { max-width: 1500px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .hero-map-header { padding: 2rem; background: #2c3e50; color: white; }
+        .hero-map-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .hero-map-subtitle { font-size: 1.1rem; opacity: 0.9; }
+        .hero-map-content { display: grid; grid-template-columns: 360px 1fr; }
+        #heroMap { height: 620px; width: 100%; }
+        .magasin-list { max-height: 620px; overflow-y: auto; padding: 1.25rem; border-right: 1px solid #dfe4e8; }
+        .magasin-item { padding: 1.25rem; border: 2px solid #bdc3c7; border-radius: 10px; margin-bottom: 1rem; cursor: pointer; transition: all 0.25s; }
+        .magasin-item:hover { border-color: #2c3e50; transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .magasin-item.active { border-color: #27ae60; background: #f8f9fa; box-shadow: 0 4px 12px rgba(39,174,96,0.15); }
+        .magasin-name { font-size: 1.1rem; font-weight: 600; color: #2c3e50; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem; }
+        .magasin-address { color: #7f8c8d; margin-bottom: 0.4rem; font-size: 0.9rem; }
+        .magasin-phone { color: #27ae60; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.75rem; }
+        .magasin-enter-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600; color: #fff; background: #2c3e50; padding: 0.45rem 0.85rem; border-radius: 20px; text-decoration: none; transition: background 0.25s, transform 0.2s; }
+        .magasin-enter-btn:hover { background: #34495e; transform: translateX(2px); }
+        .magasin-empty { color: #7f8c8d; text-align: center; padding: 2rem 1rem; }
+        @media (max-width: 900px) { .hero-map-content { grid-template-columns: 1fr; } .magasin-list { max-height: 320px; border-right: none; border-bottom: 1px solid #dfe4e8; } #heroMap { height: 420px; } }
+        .highlights-section { position: relative; padding: 5rem 2rem; background: #ecf0f1; overflow: hidden; }
+        .highlights-section::before { content: ""; position: absolute; top: -80px; right: -100px; width: 280px; height: 280px; background: radial-gradient(circle, rgba(52, 152, 219, 0.16) 0%, rgba(52, 152, 219, 0) 70%); pointer-events: none; }
+        .highlights-section::after { content: ""; position: absolute; bottom: -100px; left: -80px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(46, 204, 113, 0.14) 0%, rgba(46, 204, 113, 0) 70%); pointer-events: none; }
+        .highlights-container { max-width: 1400px; margin: 0 auto; }
+        .highlights-header { text-align: center; margin-bottom: 2rem; position: relative; z-index: 1; }
+        .highlights-kicker { display: inline-block; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: #2c3e50; background: #ffffff; border: 1px solid #bdc3c7; border-radius: 999px; padding: 0.45rem 0.9rem; }
+        .highlights-heading { margin-top: 0.9rem; font-size: 2.2rem; color: #2c3e50; font-weight: 700; }
+        .highlights-subtitle { margin-top: 0.45rem; color: #7f8c8d; font-size: 1.05rem; }
+        .highlights-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; }
+        .highlight-card { position: relative; background: #ffffff; border-radius: 12px; border: 1px solid #bdc3c7; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 2rem; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; animation: cardFadeIn 0.55s ease both; }
+        .highlight-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); border-color: #95a5a6; }
+        .highlight-icon { width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem; }
+        .highlight-icon i { font-size: 2rem; color: #ffffff; }
+        .highlight-title { font-size: 1.45rem; color: #2c3e50; margin-bottom: 0.6rem; font-weight: 700; line-height: 1.25; }
+        .highlight-desc { color: #7f8c8d; margin-bottom: 1.5rem; line-height: 1.6; min-height: 52px; }
+        .highlight-metrics { display: grid; gap: 0.8rem; }
+        .highlight-metrics.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .highlight-metrics.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .metric-item { background: #ecf0f1; border: 1px solid #d4dce0; border-radius: 8px; padding: 0.9rem; text-align: center; min-width: 0; }
+        .metric-value { display: block; font-size: 1.35rem; color: #2c3e50; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+        .metric-label { display: block; color: #7f8c8d; margin-top: 0.3rem; font-size: 0.85rem; overflow-wrap: anywhere; }
+        .highlight-checklist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+        .check-item { background: #ecf0f1; border: 1px solid #d4dce0; border-radius: 8px; padding: 0.85rem 0.9rem; display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+        .check-item i { color: #27ae60; font-size: 1rem; flex-shrink: 0; }
+        .check-item span { color: #2c3e50; font-weight: 600; font-size: 0.9rem; overflow-wrap: anywhere; }
+        .icon-dark { background: linear-gradient(135deg, #2c3e50, #34495e); }
+        .icon-green { background: linear-gradient(135deg, #27ae60, #229954); }
+        .icon-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .icon-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .highlight-card:nth-child(2) { animation-delay: 0.08s; }
+        .highlight-card:nth-child(3) { animation-delay: 0.16s; }
+        .highlight-card:nth-child(4) { animation-delay: 0.24s; }
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 992px) { .hero-title { font-size: 2.5rem; } .hero-stats { grid-template-columns: repeat(2, 1fr); } .navbar-nav { display: none; } .map-content { grid-template-columns: 1fr; } }
+        @media (max-width: 992px) { .highlights-grid { grid-template-columns: 1fr; } .highlight-metrics.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .highlights-heading { font-size: 1.8rem; } }
+        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .hero-actions { flex-direction: column; } .cards-grid { grid-template-columns: 1fr; } .search-form { grid-template-columns: 1fr; } .highlights-section { padding: 3rem 1rem; } .highlight-card { padding: 1.4rem; } .highlight-title { font-size: 1.3rem; } .highlight-desc { min-height: auto; } .highlights-heading { font-size: 1.45rem; } .highlights-subtitle { font-size: 0.95rem; } .highlight-metrics.cols-2, .highlight-metrics.cols-3, .highlight-checklist { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="mpd-site-body" data-context-path="#{facesContext.externalContext.requestContextPath}">
+    
+    <nav class="navbar mpd-navbar">
+        <div class="navbar-container">
+            <a href="#{facesContext.externalContext.requestContextPath}/" class="navbar-brand">
+                <img src="#{facesContext.externalContext.requestContextPath}/resources/images/logo-officiel.png" alt="AutoPieces Pro" style="border-radius: 50%;" />
+                <span class="brand-text">AutoPieces Pro</span>
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="#accueil" class="nav-link">#{msg['nav.home']}</a></li>
+                <li><a href="#{facesContext.externalContext.requestContextPath}/catalogue" class="nav-link">#{msg['nav.parts']}</a></li>
+                <li><a href="#magasins" class="nav-link">#{msg['nav.shops']}</a></li>
+                <li><a href="#contact" class="nav-link">#{msg['nav.contact']}</a></li>
+            </ul>
+            <div class="navbar-actions" style="display: flex; align-items: center; gap: 0.5rem;">
+                <a href="#{facesContext.externalContext.requestContextPath}/panier" class="btn btn-navbar cart-nav-link" title="Panier">
+                    <i class="fas fa-shopping-cart"></i>
+                    <c:if test="#{cartCount gt 0}">
+                        <span class="cart-badge">#{cartCount}</span>
+                    </c:if>
+                </a>
+                <button type="button" id="mpd-theme-toggle" class="btn btn-lang mpd-btn-theme" aria-label="#{msg['ui.theme.toggle']}"><i class="fas fa-moon"></i></button>
+                <a href="#{facesContext.externalContext.requestContextPath}/login" class="btn btn-navbar">
+                    <i class="fas fa-user"></i> #{msg['nav.login']}
+                </a>
+                <a href="#{facesContext.externalContext.requestContextPath}/register" class="btn btn-navbar">
+                    <i class="fas fa-user-plus"></i> #{msg['nav.register']}
+                </a>
+                
+                <a href="#{mpdLangSwitchHref}" class="btn btn-lang" title="#{msg['ui.lang.toggle.title']}">
+                    <i class="fas fa-globe"></i> #{mpdLangSwitchLabel}
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section id="accueil" class="hero-section" style="position: relative; overflow: hidden; height: 700px; display: flex; align-items: center; justify-content: center; margin-top: 0;">
+        <video autoplay="autoplay" muted="muted" loop="loop" playsinline="playsinline" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: brightness(1.2) contrast(1.1) saturate(1.1);">
+            <source src="#{facesContext.externalContext.requestContextPath}/resources/bg-hero.mp4" type="video/mp4" />
+        </video>
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(44, 62, 80, 0.6); z-index: 1;"></div>
+        <div class="hero-content" style="position: relative; z-index: 2; text-align: center; padding: 2rem;">
+            <div style="margin-bottom: 2rem;">
+                <i class="fas fa-car" style="font-size: 4rem; color: white;"></i>
+            </div>
+            <h1 class="hero-title" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">#{msg['hero.title']}</h1>
+            <p class="hero-subtitle" style="color: #ecf0f1; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                #{msg['hero.subtitle']}
+            </p>
+            <div class="hero-actions">
+                <a href="#{facesContext.externalContext.requestContextPath}/catalogue" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search"></i> #{msg['hero.searchPart']}
+                </a>
+                <button onclick="scrollToMagasins()" class="btn btn-glass btn-lg">
+                    <i class="fas fa-store"></i> #{msg['hero.findShops']}
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section id="recherche" class="search-section">
+        <div class="search-container">
+            <div class="search-box">
+                <h2 class="search-title">
+                    <i class="fas fa-search" style="color: #2c3e50; margin-right: 0.5rem;"></i>
+                    #{msg['index.search.title']}
+                </h2>
+                <form class="search-form" action="#{facesContext.externalContext.requestContextPath}/catalogue" method="get">
+                    <input type="text" name="q" class="search-input" placeholder="#{msg['index.search.placeholder']}"/>
+                    <select name="categorie" class="search-select">
+                        <option value="">#{msg['index.search.allCategories']}</option>
+                        <option value="moteur">#{msg['index.search.category.engine']}</option>
+                        <option value="freins">#{msg['index.search.category.brakes']}</option>
+                        <option value="electricite">#{msg['index.search.category.electric']}</option>
+                        <option value="suspension">#{msg['index.search.category.suspension']}</option>
+                        <option value="filtration">#{msg['index.search.category.filtration']}</option>
+                        <option value="transmission">#{msg['index.search.category.transmission']}</option>
+                        <option value="carrosserie">#{msg['index.search.category.bodywork']}</option>
+                    </select>
+                    <select name="marque" class="search-select">
+                        <option value="">#{msg['index.search.allBrands']}</option>
+                        <option value="toyota">Toyota</option>
+                        <option value="renault">Renault</option>
+                        <option value="peugeot">Peugeot</option>
+                        <option value="hyundai">Hyundai</option>
+                        <option value="dacia">Dacia</option>
+                        <option value="volkswagen">Volkswagen</option>
+                    </select>
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i> #{msg['index.search.submit']}
+                    </button>
+                </form>
+                <div class="category-tags">
+                    <span class="category-tag" onclick="selectCategory('moteur')"><i class="fas fa-cog"></i> #{msg['index.search.category.engine']}</span>
+                    <span class="category-tag" onclick="selectCategory('freins')"><i class="fas fa-compact-disc"></i> #{msg['index.search.category.brakes']}</span>
+                    <span class="category-tag" onclick="selectCategory('electricite')"><i class="fas fa-car-battery"></i> #{msg['index.search.category.electric']}</span>
+                    <span class="category-tag" onclick="selectCategory('suspension')"><i class="fas fa-spring"></i> #{msg['index.search.category.suspension']}</span>
+                    <span class="category-tag" onclick="selectCategory('filtration')"><i class="fas fa-oil-can"></i> #{msg['index.search.category.filtration']}</span>
+                    <span class="category-tag" onclick="selectCategory('transmission')"><i class="fas fa-cogs"></i> #{msg['index.search.category.transmission']}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Highlights Section -->
+    <section class="highlights-section">
+        <div class="highlights-container">
+            <div class="highlights-header">
+                <span class="highlights-kicker">#{msg['index.highlights.kicker']}</span>
+                <h2 class="highlights-heading">#{msg['index.highlights.heading']}</h2>
+                <p class="highlights-subtitle">#{msg['index.highlights.subtitle']}</p>
+            </div>
+            <div class="highlights-grid">
+                <article class="highlight-card">
+                    <div class="highlight-icon icon-dark">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <h3 class="highlight-title">#{msg['index.highlights.card1.title']}</h3>
+                    <p class="highlight-desc">#{msg['index.highlights.card1.desc']}</p>
+                    <div class="highlight-metrics cols-3">
+                        <div class="metric-item">
+                            <span class="metric-value">5000+</span>
+                            <span class="metric-label">#{msg['index.highlights.card1.metric1']}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">50+</span>
+                            <span class="metric-label">#{msg['index.highlights.card1.metric2']}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">100%</span>
+                            <span class="metric-label">#{msg['index.highlights.card1.metric3']}</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="highlight-card">
+                    <div class="highlight-icon icon-green">
+                        <i class="fas fa-truck-fast"></i>
+                    </div>
+                    <h3 class="highlight-title">#{msg['index.highlights.card2.title']}</h3>
+                    <p class="highlight-desc">#{msg['index.highlights.card2.desc']}</p>
+                    <div class="highlight-metrics cols-3">
+                        <div class="metric-item">
+                            <span class="metric-value">24-48h</span>
+                            <span class="metric-label">#{msg['index.highlights.card2.metric1']}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">Dakar</span>
+                            <span class="metric-label">#{msg['index.highlights.card2.metric2']}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">Suivi</span>
+                            <span class="metric-label">#{msg['index.highlights.card2.metric3']}</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="highlight-card">
+                    <div class="highlight-icon icon-blue">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h3 class="highlight-title">#{msg['index.highlights.card3.title']}</h3>
+                    <p class="highlight-desc">#{msg['index.highlights.card3.desc']}</p>
+                    <div class="highlight-metrics cols-2">
+                        <div class="metric-item">
+                            <span class="metric-value">1200+</span>
+                            <span class="metric-label">#{msg['index.highlights.card3.metric1']}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">150+</span>
+                            <span class="metric-label">#{msg['index.highlights.card3.metric2']}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">50+</span>
+                            <span class="metric-label">#{msg['index.highlights.card3.metric3']}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">98%</span>
+                            <span class="metric-label">#{msg['index.highlights.card3.metric4']}</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="highlight-card">
+                    <div class="highlight-icon icon-purple">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="highlight-title">#{msg['index.highlights.card4.title']}</h3>
+                    <p class="highlight-desc">#{msg['index.highlights.card4.desc']}</p>
+                    <div class="highlight-checklist">
+                        <div class="check-item"><i class="fas fa-check-circle"></i><span>#{msg['index.highlights.card4.check1']}</span></div>
+                        <div class="check-item"><i class="fas fa-lock"></i><span>#{msg['index.highlights.card4.check2']}</span></div>
+                        <div class="check-item"><i class="fas fa-undo"></i><span>#{msg['index.highlights.card4.check3']}</span></div>
+                        <div class="check-item"><i class="fas fa-certificate"></i><span>#{msg['index.highlights.card4.check4']}</span></div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="categories" class="features-section section">
+        <div class="section-overlay"></div>
+        <div style="position: relative; z-index: 1;">
+            <div class="section-header">
+                <h2 class="section-title">#{msg['index.why.title']}</h2>
+                <p class="section-subtitle">#{msg['index.why.subtitle']}</p>
+            </div>
+            <div class="cards-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="feature-title">#{msg['index.why.feature1.title']}</h3>
+                    <p class="feature-text">#{msg['index.why.feature1.desc']}</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">#{msg['index.why.feature2.title']}</h3>
+                    <p class="feature-text">#{msg['index.why.feature2.desc']}</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h3 class="feature-title">#{msg['index.why.feature3.title']}</h3>
+                    <p class="feature-text">#{msg['index.why.feature3.desc']}</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 class="feature-title">#{msg['index.why.feature4.title']}</h3>
+                    <p class="feature-text">#{msg['index.why.feature4.desc']}</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <h3 class="feature-title">#{msg['index.why.feature5.title']}</h3>
+                    <p class="feature-text">#{msg['index.why.feature5.desc']}</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <h3 class="feature-title">#{msg['index.why.feature6.title']}</h3>
+                    <p class="feature-text">#{msg['index.why.feature6.desc']}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Magasins Section -->
+    <section id="magasins" class="hero-map-section">
+        <div class="hero-map-container">
+            <div class="hero-map-header">
+                <h2 class="hero-map-title">
+                    <i class="fas fa-store" style="margin-right: 0.5rem;"></i>#{msg['index.map.title']}
+                </h2>
+                <p class="hero-map-subtitle">#{msg['index.map.subtitle']}</p>
+            </div>
+            <div class="hero-map-content">
+                <div class="magasin-list">
+                    <c:forEach var="boutique" items="#{boutiques}" varStatus="loop">
+                        <div class="magasin-item" data-index="#{loop.index}" onclick="selectMagasin(#{loop.index})">
+                            <div class="magasin-name"><i class="fas fa-store" style="color:#2c3e50;"></i> #{boutique.libelle}</div>
+                            <div class="magasin-address">#{not empty boutique.description ? boutique.description : 'Dakar, Sénégal'}</div>
+                            <c:if test="#{boutique.mobile1 ne null}">
+                                <div class="magasin-phone"><i class="fas fa-phone"></i> #{boutique.mobile1}</div>
+                            </c:if>
+                            <a href="#{facesContext.externalContext.requestContextPath}/catalogue?boutique=#{boutique.idboutique}"
+                               class="magasin-enter-btn" onclick="event.stopPropagation();">
+                                <i class="fas fa-arrow-right"></i> Voir les pièces
+                            </a>
+                        </div>
+                    </c:forEach>
+                    <c:if test="#{empty boutiques}">
+                        <p class="magasin-empty"><i class="fas fa-store-slash" style="font-size:2rem;display:block;margin-bottom:0.75rem;"></i>Aucune boutique pour le moment.</p>
+                    </c:if>
+                </div>
+                <div id="heroMap"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Pieces Section -->
+    <section id="pieces" class="section" style="background: #ecf0f1;">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+            <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
+                <h2 class="section-title">
+                    <i class="fas fa-cog" style="margin-right: 0.5rem; color: #2c3e50;"></i>#{msg['index.popular.title']}
+                </h2>
+                <p class="section-subtitle">#{msg['index.popular.subtitle']}</p>
+            </div>
+            <div class="cards-grid">
+                <c:forEach var="piece" items="#{piecesPopulaires}" varStatus="loop">
+                <div class="card">
+                    <div class="card-img">
+                        <c:choose>
+                            <c:when test="#{piece.categorie eq 'Moteur'}">
+                                <img src="#{facesContext.externalContext.requestContextPath}/resources/images/categories/moteur.jpeg" alt="#{piece.categorie}"/>
+                            </c:when>
+                            <c:when test="#{piece.categorie eq 'Freinage'}">
+                                <img src="#{facesContext.externalContext.requestContextPath}/resources/images/categories/freins.jpeg" alt="#{piece.categorie}"/>
+                            </c:when>
+                            <c:when test="#{piece.categorie eq 'Suspension'}">
+                                <img src="#{facesContext.externalContext.requestContextPath}/resources/images/categories/suspension.jpeg" alt="#{piece.categorie}"/>
+                            </c:when>
+                            <c:when test="#{piece.categorie eq 'Électricité'}">
+                                <img src="#{facesContext.externalContext.requestContextPath}/resources/images/categories/electrique.jpeg" alt="#{piece.categorie}"/>
+                            </c:when>
+                            <c:otherwise>
+                                <i class="fas fa-cogs" style="font-size: 4rem; color: rgba(255,255,255,0.35);"></i>
+                            </c:otherwise>
+                        </c:choose>
+                        <div class="card-badge">
+                            #{msg['index.popular.inStock']}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <c:if test="#{not empty piece.categorie}"><span class="card-tag">#{piece.categorie}</span></c:if>
+                        <h3 class="card-title">#{piece.libelle}</h3>
+                        <p class="card-text">#{empty piece.description ? msg['index.popular.defaultDesc'] : piece.description}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                            <span style="font-size: 1.4rem; font-weight: 700; color: #2c3e50;">#{piece.prix} FCFA</span>
+                            <a href="#{facesContext.externalContext.requestContextPath}/catalogue" class="btn btn-primary">#{msg['index.popular.view']}</a>
+                        </div>
+                    </div>
+                </div>
+                </c:forEach>
+                <c:if test="#{empty piecesPopulaires}">
+                    <p style="grid-column:1/-1;text-align:center;color:#7f8c8d;padding:2rem;">
+                        <i class="fas fa-box-open" style="font-size:2rem;display:block;margin-bottom:0.75rem;"></i>
+                        #{msg['index.popular.defaultDesc']}
+                    </p>
+                </c:if>
+            </div>
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="#{facesContext.externalContext.requestContextPath}/catalogue" class="btn btn-primary btn-lg">
+                    <i class="fas fa-list"></i> #{msg['index.popular.viewAll']}
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact" class="footer" style="padding: 4rem 2rem 2rem;">
+        <div class="footer-container" style="max-width: 1400px; margin: 0 auto;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-bottom: 3rem;">
+                <!-- À propos -->
+                <div>
+                    <h3 style="color: #ecf0f1; font-size: 1.4rem; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-car" style="margin-right: 0.5rem;"></i>AutoPieces Pro
+                    </h3>
+                    <p style="color: #bdc3c7; line-height: 1.8; margin-bottom: 1.5rem;">
+                        #{msg['index.footer.about.desc']}
+                    </p>
+                    <div style="display: flex; gap: 1rem;">
+                        <a href="#" style="color: #bdc3c7; font-size: 1.5rem; transition: color 0.3s;"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="color: #bdc3c7; font-size: 1.5rem; transition: color 0.3s;"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color: #bdc3c7; font-size: 1.5rem; transition: color 0.3s;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: #bdc3c7; font-size: 1.5rem; transition: color 0.3s;"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Liens rapides -->
+                <div>
+                    <h3 style="color: #ecf0f1; font-size: 1.4rem; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-link" style="margin-right: 0.5rem;"></i>#{msg['index.footer.links.title']}
+                    </h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.8rem;"><a href="#accueil" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-chevron-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i>#{msg['index.footer.links.home']}</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#categories" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-chevron-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i>#{msg['index.footer.links.categories']}</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#pieces" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-chevron-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i>#{msg['index.footer.links.popular']}</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#{facesContext.externalContext.requestContextPath}/catalogue" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-chevron-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i>#{msg['index.footer.links.catalog']}</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#{facesContext.externalContext.requestContextPath}/register" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-chevron-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i>#{msg['index.footer.links.register']}</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Catégories -->
+                <div>
+                    <h3 style="color: #ecf0f1; font-size: 1.4rem; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-th-large" style="margin-right: 0.5rem;"></i>#{msg['index.footer.categories.title']}
+                    </h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-cog" style="margin-right: 0.5rem; font-size: 0.9rem;"></i>#{msg['index.search.category.engine']}</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-compact-disc" style="margin-right: 0.5rem; font-size: 0.9rem;"></i>#{msg['index.search.category.brakes']}</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-car-battery" style="margin-right: 0.5rem; font-size: 0.9rem;"></i>#{msg['index.search.category.electric']}</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-spring" style="margin-right: 0.5rem; font-size: 0.9rem;"></i>#{msg['index.search.category.suspension']}</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #bdc3c7; text-decoration: none; transition: color 0.3s;"><i class="fas fa-oil-can" style="margin-right: 0.5rem; font-size: 0.9rem;"></i>#{msg['index.search.category.filtration']}</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact -->
+                <div>
+                    <h3 style="color: #ecf0f1; font-size: 1.4rem; margin-bottom: 1.5rem; font-weight: 600;">
+                        <i class="fas fa-headset" style="margin-right: 0.5rem;"></i>#{msg['index.footer.contact.title']}
+                    </h3>
+                    <div style="color: #bdc3c7; line-height: 2;">
+                        <p style="margin-bottom: 1rem;"><i class="fas fa-map-marker-alt" style="margin-right: 0.8rem; color: #95a5a6;"></i>#{msg['index.footer.contact.city']}</p>
+                        <p style="margin-bottom: 1rem;"><i class="fas fa-phone" style="margin-right: 0.8rem; color: #95a5a6;"></i>+221 77 123 45 67</p>
+                        <p style="margin-bottom: 1rem;"><i class="fas fa-envelope" style="margin-right: 0.8rem; color: #95a5a6;"></i>contact@autopiecespro.sn</p>
+                        <p><i class="fas fa-clock" style="margin-right: 0.8rem; color: #95a5a6;"></i>#{msg['index.footer.contact.hours']}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Divider -->
+            <div style="border-top: 1px solid #95a5a6; margin: 2rem 0; padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <p class="footer-copyright" style="color: #bdc3c7; margin: 0;">
+                    <i class="fas fa-copyright" style="margin-right: 0.5rem;"></i>#{msg['index.footer.copyright']}
+                </p>
+                <div style="display: flex; gap: 2rem;">
+                    <a href="#" style="color: #bdc3c7; text-decoration: none; font-size: 0.9rem; transition: color 0.3s;">#{msg['index.footer.privacy']}</a>
+                    <a href="#" style="color: #bdc3c7; text-decoration: none; font-size: 0.9rem; transition: color 0.3s;">#{msg['index.footer.terms']}</a>
+                    <a href="#" style="color: #bdc3c7; text-decoration: none; font-size: 0.9rem; transition: color 0.3s;">#{msg['index.footer.legal']}</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="#{facesContext.externalContext.requestContextPath}/js/marketplace.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="application/json" id="boutiques-data"><h:outputText value="#{boutiquesJson}" escape="false" /></script>
+    <script>
+        //<![CDATA[
+        function scrollToMagasins() {
+            document.getElementById('magasins').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function selectCategory(category) {
+            const select = document.querySelector('select[name="categorie"]');
+            if (select) {
+                select.value = category;
+                select.focus();
+            }
+        }
+        
+        var heroMapMarkers = [];
+
+        function selectMagasin(index) {
+            const items = document.querySelectorAll('.magasin-item');
+            items.forEach(function(item, i) {
+                item.classList.toggle('active', i === index);
+            });
+            var marker = heroMapMarkers[index];
+            if (marker && typeof map !== 'undefined') {
+                map.flyTo(marker.getLatLng(), 15, {duration: 0.75});
+                marker.openPopup();
+            }
+        }
+        
+        let currentSlide = 0;
+        const totalSlides = 4;
+        let autoPlayInterval;
+        
+        function moveCarousel(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = totalSlides - 1;
+            if (currentSlide >= totalSlides) currentSlide = 0;
+            updateCarousel();
+            resetAutoPlay();
+        }
+        
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+            resetAutoPlay();
+        }
+        
+        function updateCarousel() {
+            const track = document.getElementById('carouselTrack');
+            track.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+            
+            const dots = document.querySelectorAll('.carousel-dot');
+            dots.forEach(function(dot, index) {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+        
+        function resetAutoPlay() {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = setInterval(function() {
+                moveCarousel(1);
+            }, 5000);
+        }
+        
+        // Start auto-play
+        resetAutoPlay();
+        
+        // Initialize OSM Map
+        var map = L.map('heroMap').setView([14.6937, -17.4467], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Magasins data from backend
+        var magasins = JSON.parse(document.getElementById('boutiques-data').textContent);
+        var cp = document.body.getAttribute('data-context-path') || '';
+
+        // Add markers (coordonnées invalides ignorées pour ne pas casser la carte)
+        magasins.forEach(function(magasin, idx) {
+            if (typeof magasin.lat !== 'number' || typeof magasin.lng !== 'number' ||
+                isNaN(magasin.lat) || isNaN(magasin.lng)) {
+                return;
+            }
+            var marker = L.marker([magasin.lat, magasin.lng]).addTo(map);
+            marker.bindPopup(
+                '<div style="min-width: 200px;">' +
+                '<h3 style="margin: 0 0 0.5rem 0; color: #2c3e50;">' + magasin.nom + '</h3>' +
+                '<p style="margin: 0.3rem 0; color: #7f8c8d;"><i class="fas fa-map-marker-alt"></i> ' + magasin.adresse + '</p>' +
+                '<p style="margin: 0.3rem 0; color: #27ae60;"><i class="fas fa-phone"></i> ' + magasin.tel + '</p>' +
+                (magasin.id ? '<p style="margin-top:0.6rem;"><a href="' + cp + '/catalogue?boutique=' + magasin.id +
+                    '" style="color:#fff;background:#2c3e50;padding:0.4rem 0.8rem;border-radius:20px;text-decoration:none;font-size:0.82rem;font-weight:600;">Voir les pièces &#8594;</a></p>' : '') +
+                '</div>'
+            );
+            marker.on('click', function () {
+                selectMagasin(idx);
+            });
+            heroMapMarkers[idx] = marker;
+        });
+        //]]>
+    </script>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-animations.js"></script>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-theme.js"></script>
+    <script>
+        //<![CDATA[
+        var MpdTheme = MpdTheme || { init: function() { /* fallback if script not loaded */ } };
+        MpdTheme.init();
+        //]]>
+    </script>
+</body>
+</html>

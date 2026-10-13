@@ -1,0 +1,18 @@
+package com.marketplace.repository;
+
+import com.marketplace.entity.Client;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface ClientRepository extends JpaRepository<Client, Integer> {
+    
+    Optional<Client> findByPersonneIdpersonne(Integer idpersonne);
+    
+    List<Client> findByPersonneNomContainingIgnoreCase(String nom);
+    
+    boolean existsByPersonneEmail(String email);
+}

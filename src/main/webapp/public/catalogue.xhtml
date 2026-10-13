@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Catalogue pièces — AutoPieces Pro</title>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/marketplace-theme.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/mpd-public-theme.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/mpd-catalogue.css"/>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/vendor/fontawesome/css/all.min.css"/>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-branding.js"></script>
+    <script>
+        //<![CDATA[
+        (function () {
+            try {
+                var t = localStorage.getItem('mpd_ui_theme') || 'dark';
+                if (t !== 'light' && t !== 'dark') { t = 'dark'; }
+                document.documentElement.setAttribute('data-mpd-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-mpd-theme', 'dark'); }
+        })();
+        //]]>
+    </script>
+    <style>
+        /* Navbar — identique à l'accueil pour une expérience de site cohérente */
+        .cart-nav-link { position: relative; }
+        .cart-badge {
+            position: absolute; top: -6px; right: -8px;
+            background: #e74c3c; color: #fff; font-size: 0.7rem;
+            min-width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+        .navbar, .mpd-navbar { background: #2c3e50 !important; padding: 0.8rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 10px; left: 5px; right: 5px; width: calc(100% - 10px); z-index: 1000; transition: background 0.25s, box-shadow 0.25s; border-radius: 50px; }
+        .navbar-container { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
+        .navbar-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: #ecf0f1; font-size: 1.2rem; font-weight: 700; }
+        .navbar-brand img { height: 35px; width: auto; border-radius: 50%; }
+        .navbar-nav { display: flex; list-style: none; gap: 0.3rem; }
+        .nav-link { color: #ecf0f1; text-decoration: none; font-weight: 600; transition: all 0.3s; padding: 0.6rem 1.2rem; border-radius: 8px; position: relative; font-size: 1rem; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: #ffffff; transform: translateY(-2px); }
+        .nav-link::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 0; height: 2px; background: #ecf0f1; transition: width 0.3s; }
+        .nav-link:hover::after, .nav-link.active::after { width: 60%; }
+        .nav-link.active { background: rgba(255,255,255,0.12); }
+        .navbar-actions { display: flex; gap: 0.5rem; align-items: center; }
+        .btn { padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.3s; cursor: pointer; border: none; font-size: 0.85rem; }
+        .btn-navbar { background: transparent; color: #ecf0f1; border: 2px solid #bdc3c7; font-size: 0.85rem; padding: 0.5rem 1rem; }
+        .btn-navbar:hover { border-color: #ecf0f1; color: #ecf0f1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+        .btn-lang { background: transparent; color: #ecf0f1; border: 2px solid #3498db; font-size: 0.75rem; padding: 0.35rem 0.7rem; }
+        .btn-lang:hover { background: transparent; color: #ecf0f1; border-color: #ecf0f1; transform: translateY(-2px); }
+        @media (max-width: 992px) { .navbar-nav { display: none; } }
+    </style>
+</head>
+<body class="mpd-site-body mpd-catalogue-page">
+
+<nav class="navbar mpd-navbar">
+    <div class="navbar-container">
+        <a href="#{facesContext.externalContext.requestContextPath}/" class="navbar-brand">
+            <img src="#{facesContext.externalContext.requestContextPath}/resources/images/logo-officiel.png" alt="AutoPieces Pro" style="border-radius: 50%;" />
+            <span class="brand-text">AutoPieces Pro</span>
+        </a>
+        <ul class="navbar-nav">
+            <li><a href="#{facesContext.externalContext.requestContextPath}/#accueil" class="nav-link">#{msg['nav.home']}</a></li>
+            <li><a href="#{facesContext.externalContext.requestContextPath}/catalogue" class="nav-link active">#{msg['nav.parts']}</a></li>
+            <li><a href="#{facesContext.externalContext.requestContextPath}/#magasins" class="nav-link">#{msg['nav.shops']}</a></li>
+            <li><a href="#{facesContext.externalContext.requestContextPath}/#contact" class="nav-link">#{msg['nav.contact']}</a></li>
+        </ul>
+        <div class="navbar-actions" style="display: flex; align-items: center; gap: 0.5rem;">
+            <a href="#{facesContext.externalContext.requestContextPath}/panier" class="btn btn-navbar cart-nav-link" title="Panier">
+                <i class="fas fa-shopping-cart"></i>
+                <c:if test="#{cartCount gt 0}">
+                    <span class="cart-badge">#{cartCount}</span>
+                </c:if>
+            </a>
+            <button type="button" id="mpd-theme-toggle" class="btn btn-lang mpd-btn-theme" aria-label="#{msg['ui.theme.toggle']}"><i class="fas fa-moon"></i></button>
+            <a href="#{facesContext.externalContext.requestContextPath}/login" class="btn btn-navbar">
+                <i class="fas fa-user"></i> #{msg['nav.login']}
+            </a>
+            <a href="#{facesContext.externalContext.requestContextPath}/register" class="btn btn-navbar">
+                <i class="fas fa-user-plus"></i> #{msg['nav.register']}
+            </a>
+            <a href="#{mpdLangSwitchHref}" class="btn btn-lang" title="#{msg['ui.lang.toggle.title']}">
+                <i class="fas fa-globe"></i> #{mpdLangSwitchLabel}
+            </a>
+        </div>
+    </div>
+</nav>
+
+<header class="catalogue-banner">
+    <div class="catalogue-banner-overlay"></div>
+    <div class="catalogue-banner-content">
+        <i class="fas fa-cogs catalogue-banner-icon"></i>
+        <h1>Catalogue pièces</h1>
+        <p>Des milliers de pièces détachées auto, vérifiées et prêtes à livrer.</p>
+    </div>
+</header>
+
+<div class="catalogue-wrap">
+    <c:if test="#{not empty cartSuccess}">
+        <div class="catalogue-alert success"><i class="fas fa-check-circle"></i> #{cartSuccess}</div>
+    </c:if>
+
+    <form class="catalogue-filters-card" method="get" action="#{facesContext.externalContext.requestContextPath}/catalogue">
+        <div>
+            <label for="q">Recherche</label>
+            <input type="text" id="q" name="q" value="#{searchQuery}" placeholder="Libellé, référence, description…"/>
+        </div>
+        <div>
+            <label for="categorie">Catégorie</label>
+            <select id="categorie" name="categorie">
+                <option value="">Toutes les catégories</option>
+                <c:forEach var="cat" items="#{categories}">
+                    <c:choose>
+                        <c:when test="#{selectedCategorie eq cat.idcatpiece.toString()}">
+                            <option value="#{cat.idcatpiece}" selected="selected">#{cat.libelle}</option>
+                        </c:when>
+                        <c:otherwise>
+                            <option value="#{cat.idcatpiece}">#{cat.libelle}</option>
+                        </c:otherwise>
+                    </c:choose>
+                </c:forEach>
+            </select>
+        </div>
+        <div>
+            <label for="marque">Marque véhicule</label>
+            <select id="marque" name="marque">
+                <option value="">Toutes</option>
+                <c:forEach var="marqueItem" items="#{['toyota', 'renault', 'peugeot', 'hyundai']}">
+                    <c:choose>
+                        <c:when test="#{selectedMarque eq marqueItem}">
+                            <option value="#{marqueItem}" selected="selected">#{marqueItem}</option>
+                        </c:when>
+                        <c:otherwise>
+                            <option value="#{marqueItem}">#{marqueItem}</option>
+                        </c:otherwise>
+                    </c:choose>
+                </c:forEach>
+            </select>
+        </div>
+        <div>
+            <label for="boutique">Boutique</label>
+            <select id="boutique" name="boutique">
+                <option value="">Toutes les boutiques</option>
+                <c:forEach var="bq" items="#{boutiques}">
+                    <c:choose>
+                        <c:when test="#{selectedBoutique eq bq.idboutique.toString()}">
+                            <option value="#{bq.idboutique}" selected="selected">#{bq.libelle}</option>
+                        </c:when>
+                        <c:otherwise>
+                            <option value="#{bq.idboutique}">#{bq.libelle}</option>
+                        </c:otherwise>
+                    </c:choose>
+                </c:forEach>
+            </select>
+        </div>
+        <div>
+            <label>&#160;</label>
+            <button type="submit"><i class="fas fa-search"></i> Filtrer</button>
+        </div>
+    </form>
+
+    <div class="catalogue-layout">
+        <aside class="catalogue-sidebar">
+            <div class="catalogue-sidebar-card">
+                <h3><i class="fas fa-tags"></i> Catégories</h3>
+                <ul class="catalogue-cat-list">
+                    <li>
+                        <a href="#{facesContext.externalContext.requestContextPath}/catalogue"
+                           class="#{empty selectedCategorie ? 'active' : ''}">
+                            <i class="fas fa-th-large"></i> Toutes les catégories
+                        </a>
+                    </li>
+                    <c:forEach var="cat" items="#{categories}">
+                        <li>
+                            <a href="#{facesContext.externalContext.requestContextPath}/catalogue?categorie=#{cat.idcatpiece}"
+                               class="#{selectedCategorie eq cat.idcatpiece.toString() ? 'active' : ''}">
+                                <i class="fas fa-cog"></i> #{cat.libelle}
+                            </a>
+                        </li>
+                    </c:forEach>
+                </ul>
+            </div>
+            <div class="catalogue-sidebar-card catalogue-sidebar-promo">
+                <i class="fas fa-truck"></i>
+                <h4>Livraison rapide</h4>
+                <p>Commandez en ligne, récupérez en boutique ou faites-vous livrer.</p>
+            </div>
+        </aside>
+
+        <main class="catalogue-main">
+            <p class="catalogue-result-bar">
+                <strong>#{resultCount}</strong> pièce(s) trouvée(s)
+                <c:if test="#{not empty searchQuery}"> — recherche « #{searchQuery} »</c:if>
+            </p>
+
+            <input type="text" id="catalogue-search" class="search-input" placeholder="Affiner dans les résultats…"
+                   style="width:100%;max-width:480px;margin-bottom:1.25rem;padding:0.65rem;border:2px solid #bdc3c7;border-radius:8px;"/>
+
+            <c:choose>
+                <c:when test="#{empty cataloguePieces}">
+                    <div class="catalogue-empty">
+                        <i class="fas fa-box-open" style="font-size:2.5rem;margin-bottom:1rem;"></i>
+                        <p>Aucune pièce ne correspond à vos critères.</p>
+                        <a href="#{facesContext.externalContext.requestContextPath}/catalogue" style="color:var(--mpd-primary,#0d47a1);">Réinitialiser les filtres</a>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="catalogue-grid">
+                        <c:forEach var="item" items="#{cataloguePieces}" varStatus="loop">
+                            <article class="catalogue-card" data-search="#{item.libelle} #{item.ref} #{item.description} #{item.categorie} #{item.boutique}">
+                                <div class="catalogue-card-img">
+                                    <c:choose>
+                                        <c:when test="#{item.categorie eq 'Moteur'}">
+                                            <img src="#{facesContext.externalContext.requestContextPath}/resources/images/categories/moteur.jpeg" alt="#{item.categorie}"/>
+                                        </c:when>
+                                        <c:when test="#{item.categorie eq 'Freinage'}">
+                                            <img src="#{facesContext.externalContext.requestContextPath}/resources/images/categories/freins.jpeg" alt="#{item.categorie}"/>
+                                        </c:when>
+                                        <c:when test="#{item.categorie eq 'Suspension'}">
+                                            <img src="#{facesContext.externalContext.requestContextPath}/resources/images/categories/suspension.jpeg" alt="#{item.categorie}"/>
+                                        </c:when>
+                                        <c:when test="#{item.categorie eq 'Électricité'}">
+                                            <img src="#{facesContext.externalContext.requestContextPath}/resources/images/categories/electrique.jpeg" alt="#{item.categorie}"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fas fa-cogs" style="font-size:2.5rem;color:rgba(255,255,255,0.6);"></i>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div class="catalogue-card-body">
+                                    <h2 class="catalogue-card-title">#{item.libelle}</h2>
+                                    <p class="catalogue-card-meta">
+                                        <c:if test="#{not empty item.ref}">Réf. #{item.ref}</c:if>
+                                        <c:if test="#{not empty item.categorie}"> · #{item.categorie}</c:if>
+                                    </p>
+                                    <c:if test="#{not empty item.boutique}">
+                                        <p class="catalogue-card-shop"><i class="fas fa-store"></i> #{item.boutique}</p>
+                                    </c:if>
+                                    <p class="catalogue-card-price">#{item.prix} FCFA</p>
+                                    <div class="catalogue-actions">
+                                        <button type="button" class="btn-detail" data-piece-detail="1"
+                                                data-id="#{item.idpiece}" data-libelle="#{item.libelle}"
+                                                data-ref="#{item.ref}" data-desc="#{item.description}" data-prix="#{item.prix}">
+                                            <i class="fas fa-eye"></i> Détails
+                                        </button>
+                                        <form action="#{facesContext.externalContext.requestContextPath}/panier/add" method="post" style="display:inline;">
+                                            <input type="hidden" name="idpiece" value="#{item.idpiece}"/>
+                                            <input type="hidden" name="quantite" value="1"/>
+                                            <input type="hidden" name="redirect" value="/catalogue"/>
+                                            <button type="submit" class="btn-cart"><i class="fas fa-cart-plus"></i> Panier</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article>
+                        </c:forEach>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </main>
+    </div>
+</div>
+
+<div id="piece-detail-modal" role="dialog" aria-modal="true">
+    <div class="piece-modal-box">
+        <button type="button" id="piece-modal-close" aria-label="Fermer">&#215;</button>
+        <h3 id="piece-modal-title"></h3>
+        <p id="piece-modal-ref" style="color:#7f8c8d;font-size:0.9rem;"></p>
+        <p id="piece-modal-prix" class="catalogue-card-price"></p>
+        <p id="piece-modal-desc" style="line-height:1.6;color:#5d6d7e;"></p>
+        <form action="#{facesContext.externalContext.requestContextPath}/panier/add" method="post"
+              style="margin-top:1.25rem;display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+            <input type="hidden" name="idpiece" id="piece-modal-id"/>
+            <input type="hidden" name="redirect" value="/catalogue"/>
+            <label>Qté <input type="number" name="quantite" value="1" min="1" max="99" style="width:60px;margin-left:0.35rem;padding:0.35rem;"/></label>
+            <button type="submit" class="btn-cart"><i class="fas fa-cart-plus"></i> Ajouter au panier</button>
+        </form>
+    </div>
+</div>
+
+<script src="#{facesContext.externalContext.requestContextPath}/js/mpd-cart.js"></script>
+<script src="#{facesContext.externalContext.requestContextPath}/js/mpd-animations.js"></script>
+<script src="#{facesContext.externalContext.requestContextPath}/js/mpd-theme.js"></script>
+<script>
+    //<![CDATA[
+    var MpdTheme = MpdTheme || { init: function() { /* fallback if script not loaded */ } };
+    MpdTheme.init();
+    //]]>
+</script>
+</body>
+</html>

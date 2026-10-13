@@ -1,0 +1,37 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Commandes</span>
+                        <div class="stat-card-icon red"><i class="fas fa-shopping-cart"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{totalCommandes != null ? totalCommandes : 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Clients</span>
+                        <div class="stat-card-icon blue"><i class="fas fa-users"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{totalClients != null ? totalClients : 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Boutiques</span>
+                        <div class="stat-card-icon green"><i class="fas fa-store"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{totalBoutiques != null ? totalBoutiques : 0}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Pièces</span>
+                        <div class="stat-card-icon orange"><i class="fas fa-cog"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{totalPieces != null ? totalPieces : 0}</div>
+                </div>
+            </div>
+</ui:composition>

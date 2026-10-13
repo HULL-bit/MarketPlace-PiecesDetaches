@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+<head>
+    <ui:include src="/WEB-INF/fragments/adminHead.xhtml"/>
+    <style>
+        .dash-quick-links { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-bottom: 1.25rem; }
+        .dash-quick-links a {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.5rem 0.95rem; border-radius: 8px;
+            background: #fff; border: 1px solid var(--admin-border, #bdc3c7);
+            color: var(--admin-text, #2c3e50); text-decoration: none; font-weight: 600; font-size: 0.88rem;
+        }
+        .dash-quick-links a:hover { border-color: #2c3e50; background: #f8f9fa; }
+        .dash-two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem; align-items: start; }
+        .dash-substats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .dash-substat {
+            background: #fff; border: 1px solid var(--admin-border, #bdc3c7); border-radius: 10px;
+            padding: 0.85rem 1rem; font-size: 0.88rem;
+        }
+        .dash-substat strong { display: block; font-size: 1.25rem; color: #2c3e50; margin-top: 0.2rem; }
+        .dash-pipeline { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .dash-etat-badge {
+            background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px;
+            padding: 0.35rem 0.65rem; font-size: 0.82rem; font-weight: 600; color: #2c3e50;
+        }
+    </style>
+</head>
+<body class="admin-body">
+<c:set var="dash" value="#{empty dash ? adminDashboardView.dash : dash}"/>
+<div class="admin-layout">
+    <ui:include src="/WEB-INF/fragments/adminSidebar.xhtml"><ui:param name="adminNav" value="dashboard"/></ui:include>
+    <div class="admin-main">
+        <ui:include src="/WEB-INF/fragments/adminTopbar.xhtml"/>
+        <div class="admin-content">
+
+            <nav class="dash-quick-links" aria-label="Raccourcis admin">
+                <a href="#{facesContext.externalContext.requestContextPath}/admin/utilisateurs"><i class="fas fa-users"></i> Utilisateurs</a>
+                <a href="#{facesContext.externalContext.requestContextPath}/admin/boutiques"><i class="fas fa-store"></i> Boutiques</a>
+                <a href="#{facesContext.externalContext.requestContextPath}/admin/pieces"><i class="fas fa-cog"></i> Pièces</a>
+                <a href="#{facesContext.externalContext.requestContextPath}/admin/categories"><i class="fas fa-tags"></i> Catégories</a>
+                <a href="#{facesContext.externalContext.requestContextPath}/admin/commandes"><i class="fas fa-shopping-cart"></i> Commandes</a>
+                <a href="#{facesContext.externalContext.requestContextPath}/admin/initialisation"><i class="fas fa-database"></i> Initialisation</a>
+            </nav>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Utilisateurs</span>
+                        <div class="stat-card-icon blue"><i class="fas fa-users"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{dash.totalUsers}</div>
+                    <div class="stat-card-change">#{dash.activeUsers} actifs · #{dash.inactiveUsers} autres</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Boutiques</span>
+                        <div class="stat-card-icon green"><i class="fas fa-store"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{dash.totalBoutiques}</div>
+                    <div class="stat-card-change">#{dash.activeBoutiques} actives (état ACTIF)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Pièces</span>
+                        <div class="stat-card-icon orange"><i class="fas fa-cog"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{dash.totalPieces}</div>
+                    <div class="stat-card-change">#{dash.piecesDisponibles} disponibles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Commandes</span>
+                        <div class="stat-card-icon red"><i class="fas fa-shopping-cart"></i></div>
+                    </div>
+                    <div class="stat-card-value">#{dash.totalCommandes}</div>
+                    <div class="stat-card-change">#{dash.commandesEnAttente} en attente · #{dash.commandesLivrees} livrées</div>
+                </div>
+            </div>
+
+            <div class="dash-substats">
+                <div class="dash-substat">Clients <strong>#{dash.nbClients}</strong></div>
+                <div class="dash-substat">Admins <strong>#{dash.nbAdmins}</strong></div>
+                <div class="dash-substat">Vendeurs / magasin <strong>#{dash.nbVendeurs}</strong></div>
+                <div class="dash-substat">Atelier / mécano <strong>#{dash.nbAgentsAtelier}</strong></div>
+                <div class="dash-substat">Livreurs <strong>#{dash.nbLivreurs}</strong></div>
+                <div class="dash-substat">Catégories pièces <strong>#{dash.totalCategories}</strong></div>
+                <div class="dash-substat">Commandes aujourd'hui <strong>#{dash.commandesAujourdhui}</strong></div>
+                <div class="dash-substat">Commandes 7 jours <strong>#{dash.commandes7Jours}</strong></div>
+                <div class="dash-substat">CA (livrées)&#160;<span style="font-weight:400;color:#7f8c8d;font-size:0.75rem;">FCFA</span>
+                    <strong><h:outputText value="#{dash.chiffreAffairesFcfa}"><f:convertNumber groupingUsed="true" type="number"/></h:outputText></strong>
+                </div>
+                <div class="dash-substat">Age &lt; 18 <strong>#{dash.ageMoins18}</strong></div>
+                <div class="dash-substat">Age 18-25 <strong>#{dash.age18a25}</strong></div>
+                <div class="dash-substat">Age 26-40 <strong>#{dash.age26a40}</strong></div>
+                <div class="dash-substat">Age 41+ <strong>#{dash.age41Plus}</strong></div>
+            </div>
+
+            <c:if test="#{not empty dash.commandesParEtat}">
+                <div class="admin-card" style="margin-bottom: 1.25rem;">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">Commandes par état</h3>
+                    </div>
+                    <div style="padding: 1rem 1.25rem;">
+                        <div class="dash-pipeline">
+                            <c:forEach var="entry" items="#{dash.commandesParEtat}">
+                                <span class="dash-etat-badge">#{entry.key} · #{entry.value}</span>
+                            </c:forEach>
+                        </div>
+                    </div>
+                </div>
+            </c:if>
+
+            <div class="dash-two-col">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">Utilisateurs récents</h3>
+                        <a href="#{facesContext.externalContext.requestContextPath}/admin/utilisateurs" class="btn btn-sm btn-primary">Gérer</a>
+                    </div>
+                    <div class="admin-card-body admin-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                            <tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Statut</th></tr>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="user" items="#{dash.recentUsers}">
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div class="table-avatar">#{empty user.prenom ? '?' : fn:toUpperCase(fn:substring(user.prenom, 0, 1))}</div>
+                                            <span>#{user.prenom} #{user.nom}</span>
+                                        </div>
+                                    </td>
+                                    <td>#{user.email}</td>
+                                    <td><span class="status-badge active">#{user.role}</span></td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="#{user.etat == 'ACTIF'}">
+                                                <span class="status-badge active">Actif</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="status-badge inactive">Inactif</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            <c:if test="#{empty dash.recentUsers}">
+                                <tr><td colspan="4" style="text-align:center;color:#7f8c8d;padding:1.5rem;">Aucun utilisateur</td></tr>
+                            </c:if>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">Commandes récentes</h3>
+                        <a href="#{facesContext.externalContext.requestContextPath}/admin/commandes" class="btn btn-sm btn-primary">Voir tout</a>
+                    </div>
+                    <div class="admin-card-body admin-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                            <tr><th>N°</th><th>Date</th><th>Client</th><th>Articles</th><th>État</th></tr>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="cmd" items="#{dash.recentCommandes}">
+                                <tr>
+                                    <td>##{cmd.idcommande}</td>
+                                    <td><h:outputText value="#{cmd.date}"/></td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="#{cmd.client != null}">##{cmd.client.idclient}</c:when>
+                                            <c:otherwise>—</c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>#{cmd.nombrearticle != null ? cmd.nombrearticle : 0}</td>
+                                    <td><span class="status-badge active"><h:outputText value="#{cmd.etat}"/></span></td>
+                                </tr>
+                            </c:forEach>
+                            <c:if test="#{empty dash.recentCommandes}">
+                                <tr><td colspan="5" style="text-align:center;color:#7f8c8d;padding:1.5rem;">Aucune commande</td></tr>
+                            </c:if>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

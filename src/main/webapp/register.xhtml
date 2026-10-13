@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:p="http://primefaces.org/ui" xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>#{msg['form.register.pageTitle']} - AutoPieces Pro</title>
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/login.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/template/poseidon-layout/css/primeflex.min.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/css/mpd-public-theme.css" />
+    <link rel="stylesheet" href="#{facesContext.externalContext.requestContextPath}/resources/vendor/fontawesome/css/all.min.css" />
+    <script>
+        //<![CDATA[
+        (function () {
+            try {
+                var t = localStorage.getItem('mpd_ui_theme') || 'dark';
+                if (t !== 'light' && t !== 'dark') { t = 'dark'; }
+                document.documentElement.setAttribute('data-mpd-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-mpd-theme', 'dark'); }
+        })();
+        //]]>
+    </script>
+</head>
+<body style="margin: 0; padding: 0;" class="mpd-site-body">
+    <div class="login-toolbar">
+        <button type="button" id="mpd-theme-toggle" class="mpd-btn-theme" style="color:#2c3e50;border-color:#bdc3c7;" aria-label="#{msg['ui.theme.toggle']}"></button>
+        <a href="#{mpdLangSwitchHref}" class="mpd-btn-theme" style="text-decoration:none;color:#2c3e50;" title="#{msg['ui.lang.toggle.title']}"><i class="fas fa-globe"></i> #{mpdLangSwitchLabel}</a>
+    </div>
+    <div class="login-page">
+        <div class="login-form-section">
+            <div class="login-container">
+                <div class="login-logo">
+                    <a href="#{facesContext.externalContext.requestContextPath}/">
+                        <img src="#{facesContext.externalContext.requestContextPath}/images/logo-officiel.png" alt="AutoPieces Pro" style="height: 72px;" />
+                    </a>
+                    <h1 class="login-title">#{msg['form.register.pageTitle']}</h1>
+                    <p class="login-subtitle">#{msg['form.register.pageSubtitle']}</p>
+                </div>
+
+                <c:if test="#{not empty error}">
+                    <div class="alert alert-error" style="background: rgba(231, 76, 60, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <i class="fas fa-exclamation-circle"></i> #{error}
+                    </div>
+                </c:if>
+
+                <form method="POST" action="#{facesContext.externalContext.requestContextPath}/register" class="login-form">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="prenom"><i class="fas fa-user"></i> #{msg['form.register.field.firstName']}</label>
+                            <input type="text" id="prenom" name="prenom" required="required" placeholder="#{msg['form.register.field.firstName']}" />
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="nom"><i class="fas fa-user"></i> #{msg['form.register.field.lastName']}</label>
+                            <input type="text" id="nom" name="nom" required="required" placeholder="#{msg['form.register.field.lastName']}" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> #{msg['form.register.field.email']}</label>
+                        <input type="email" id="email" name="email" required="required" placeholder="vous@exemple.com" />
+                    </div>
+                    <div class="form-group">
+                        <label for="tel"><i class="fas fa-phone"></i> #{msg['form.register.field.phone']} <span style="font-weight:400;color:#7f8c8d;">#{msg['form.register.field.phone.optional']}</span></label>
+                        <input type="tel" id="tel" name="tel" placeholder="77 000 00 00" />
+                    </div>
+                    <div class="form-group">
+                        <label for="adresse"><i class="fas fa-map-marker-alt"></i> #{msg['form.register.field.address']} <span id="adresseRequiredHint" style="font-weight:400;color:#7f8c8d;">#{msg['form.register.field.phone.optional']}</span></label>
+                        <input type="text" id="adresse" name="adresse" placeholder="Ville / quartier" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-lock"></i> #{msg['form.register.field.password']}</label>
+                        <input type="password" id="password" name="password" required="required" placeholder="#{msg['form.auth.field.password.placeholder']}" />
+                    </div>
+                    <div class="form-group">
+                        <label for="role"><i class="fas fa-id-badge"></i> #{msg['form.register.field.accountType']}</label>
+                        <select id="role" name="role" style="width: 100%; padding: 0.9rem; border: 1px solid #bdc3c7; border-radius: 8px; background: #f8f9fa;">
+                            <option value="CLIENT">#{msg['form.register.role.client']}</option>
+                            <option value="BOUTIQUE">#{msg['form.register.role.boutique']}</option>
+                            <option value="MECANICIEN">#{msg['form.register.role.mecanicien']}</option>
+                        </select>
+                    </div>
+                    <div class="form-group role-extra role-boutique" style="display:none;">
+                        <label for="boutiqueNom"><i class="fas fa-store"></i> #{msg['form.register.field.shopName']}</label>
+                        <input type="text" id="boutiqueNom" name="boutiqueNom" placeholder="#{msg['form.register.field.shopName.placeholder']}" />
+                    </div>
+                    <div class="form-group role-extra role-mecanicien" style="display:none;">
+                        <label for="specialite"><i class="fas fa-tools"></i> #{msg['form.register.field.specialty']}</label>
+                        <input type="text" id="specialite" name="specialite" placeholder="#{msg['form.register.field.specialty.placeholder']}" />
+                    </div>
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-user-plus"></i> #{msg['form.register.submit']}
+                    </button>
+                </form>
+
+                <div class="login-signup" style="text-align: center; margin-top: 1.5rem; color: #7f8c8d;">
+                    <p>#{msg['form.register.login.prompt']} <a href="#{facesContext.externalContext.requestContextPath}/login">#{msg['nav.login']}</a></p>
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="#{facesContext.externalContext.requestContextPath}/" style="color: var(--text-muted); text-decoration: none;">
+                        <i class="fas fa-arrow-left"></i> #{msg['form.register.link.home']}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-visual-section">
+            <div style="text-align: center; max-width: 560px;">
+                <i class="fas fa-car-side" style="font-size: 4rem; color: var(--secondary-light); margin-bottom: 1.5rem;"></i>
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-weight: 700;">#{msg['form.register.side.title']}</h2>
+                <p style="font-size: 1.05rem; color: rgba(255,255,255,0.85); line-height: 1.65;">
+                    #{msg['form.register.side.lead']}
+                </p>
+            </div>
+        </div>
+    </div>
+    <script>
+        //<![CDATA[
+        (function() {
+            var roleEl = document.getElementById('role');
+            var telEl = document.getElementById('tel');
+            var adresseEl = document.getElementById('adresse');
+            var boutiqueNomEl = document.getElementById('boutiqueNom');
+            var specialiteEl = document.getElementById('specialite');
+            var roleExtras = document.querySelectorAll('.role-extra');
+            var hint = document.getElementById('adresseRequiredHint');
+
+            function toggleByRole() {
+                var role = roleEl.value;
+                roleExtras.forEach(function(el) { el.style.display = 'none'; });
+                telEl.required = false;
+                adresseEl.required = false;
+                boutiqueNomEl.required = false;
+                specialiteEl.required = false;
+                hint.textContent = '(optionnel)';
+
+                if (role === 'BOUTIQUE') {
+                    document.querySelector('.role-boutique').style.display = 'block';
+                    telEl.required = true;
+                    adresseEl.required = true;
+                    boutiqueNomEl.required = true;
+                    hint.textContent = '(obligatoire pour boutique)';
+                } else if (role === 'MECANICIEN') {
+                    document.querySelector('.role-mecanicien').style.display = 'block';
+                    telEl.required = true;
+                    adresseEl.required = true;
+                    specialiteEl.required = true;
+                    hint.textContent = '(obligatoire pour mecanicien)';
+                }
+            }
+
+            roleEl.addEventListener('change', toggleByRole);
+            toggleByRole();
+        })();
+        //]]>
+    </script>
+    <script src="#{facesContext.externalContext.requestContextPath}/js/mpd-theme.js"></script>
+    <script>MpdTheme.init();</script>
+</body>
+</html>

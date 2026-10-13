@@ -1,0 +1,138 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+            <c:if test="#{not empty success}">
+                <div class="admin-alert success"><i class="fas fa-check-circle"></i> #{success}</div>
+            </c:if>
+            <c:if test="#{not empty error}">
+                <div class="admin-alert error"><i class="fas fa-exclamation-circle"></i> #{error}</div>
+            </c:if>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Catégories de pièces</h3>
+                    <button type="button" class="btn btn-primary" onclick="openCatModal(null)"><i class="fas fa-plus"></i> Ajouter</button>
+                </div>
+                <div class="admin-card-body">
+                    <div class="dt-filter-bar" style="margin-bottom:0.75rem;">
+                        <input type="text" class="dt-filter-input" data-table="catTable" placeholder="&#128269; Libellé / Réf. / Code..." />
+                        <select class="dt-filter-select" data-table="catTable" data-col="4">
+                            <option value="">Parent...</option>
+                            <option value="—">Aucun parent</option>
+                            <c:forEach var="c" items="#{allCategories}">
+                                <option value="#{c.libelle}">#{c.libelle}</option>
+                            </c:forEach>
+                        </select>
+                        <button type="button" class="btn btn-sm btn-light dt-filter-reset" data-table="catTable">
+                            <i class="fas fa-eraser"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body admin-table-wrap">
+                    <table class="data-table dt-filterable" id="catTable">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Libellé</th>
+                            <th>Réf.</th>
+                            <th>Code</th>
+                            <th>Parent</th>
+                            <th>Pièces (nb)</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <c:forEach var="cat" items="#{categories}">
+                            <tr>
+                                <td>#{cat.idcatpiece}</td>
+                                <td>#{cat.libelle}</td>
+                                <td><h:outputText value="#{cat.ref}"/></td>
+                                <td><h:outputText value="#{cat.code}"/></td>
+                                <td>#{cat.parent != null ? cat.parent.libelle : '—'}</td>
+                                <td>#{cat.nombre != null ? cat.nombre : 0}</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="openCatModalFromRow(this)"><i class="fas fa-edit"></i></button>
+                                        <a href="#{facesContext.externalContext.requestContextPath}/admin/categories/#{cat.idcatpiece}/delete" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette catégorie ?');"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                                <td style="display:none" class="cat-meta-id">#{cat.idcatpiece}</td>
+                                <td style="display:none" class="cat-meta-lib">#{cat.libelle}</td>
+                                <td style="display:none" class="cat-meta-ref"><h:outputText value="#{cat.ref}"/></td>
+                                <td style="display:none" class="cat-meta-code"><h:outputText value="#{cat.code}"/></td>
+                                <td style="display:none" class="cat-meta-parent">#{cat.parent != null ? cat.parent.idcatpiece : ''}</td>
+                            </tr>
+                        </c:forEach>
+                        <c:if test="#{empty categories}">
+                            <tr><td colspan="7" style="text-align:center;padding:2rem;color:#7f8c8d;">Aucune catégorie</td></tr>
+                        </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+<div id="catModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="catModalTitle">Catégorie</h3>
+            <button type="button" class="close-btn" onclick="document.getElementById('catModal').classList.remove('active')">&#215;</button>
+        </div>
+        <form action="#{facesContext.externalContext.requestContextPath}/admin/categories/save" method="POST">
+            <input type="hidden" name="idcatpiece" id="cat_id"/>
+            <div class="form-group">
+                <label>Libellé *</label>
+                <input type="text" name="libelle" id="cat_libelle" required="required"/>
+            </div>
+            <div class="form-group">
+                <label>Référence courte</label>
+                <input type="text" name="ref" id="cat_ref" placeholder="Optionnel (sinon dérivé du libellé à la création)"/>
+            </div>
+            <div class="form-group">
+                <label>Code</label>
+                <input type="number" name="code" id="cat_code"/>
+            </div>
+            <div class="form-group">
+                <label>Catégorie parente</label>
+                <select name="parentId" id="cat_parent">
+                    <option value="">— Aucune —</option>
+                    <c:forEach var="c" items="#{allCategories}">
+                        <option value="#{c.idcatpiece}">#{c.libelle}</option>
+                    </c:forEach>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('catModal').classList.remove('active')">Annuler</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    //<![CDATA[
+    function openCatModal(id) {
+        document.getElementById('catModalTitle').textContent = id ? 'Modifier la catégorie' : 'Nouvelle catégorie';
+        document.getElementById('cat_id').value = id ? id : '';
+        document.getElementById('cat_libelle').value = '';
+        document.getElementById('cat_ref').value = '';
+        document.getElementById('cat_code').value = '';
+        document.getElementById('cat_parent').value = '';
+        document.getElementById('catModal').classList.add('active');
+    }
+    function openCatModalFromRow(btn) {
+        var tr = btn.closest('tr');
+        document.getElementById('catModalTitle').textContent = 'Modifier la catégorie';
+        document.getElementById('cat_id').value = tr.querySelector('.cat-meta-id').textContent.trim();
+        document.getElementById('cat_libelle').value = tr.querySelector('.cat-meta-lib').textContent.trim();
+        document.getElementById('cat_ref').value = tr.querySelector('.cat-meta-ref').textContent.trim();
+        document.getElementById('cat_code').value = tr.querySelector('.cat-meta-code').textContent.trim();
+        document.getElementById('cat_parent').value = tr.querySelector('.cat-meta-parent').textContent.trim();
+        document.getElementById('catModal').classList.add('active');
+    }
+    //]]>
+</script>
+
+</ui:composition>
